@@ -2,4 +2,14 @@
 pub enum AppState {
   StudioLogo,
   Menu,
+  InGame,
 }
+
+// studio logo settings
+pub const STUDIO_LOGO_WAITING_SECONDS: f32 = 5.0;
+
+// control panel settings
+pub const HEALTH_BAR_WIDTH: f32 = 300.0;
+pub const ENERGY_BAR_WIDTH: f32 = 300.0;
+
+pub const PLAYER_NAME: &str = "蓿";

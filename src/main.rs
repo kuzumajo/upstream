@@ -1,10 +1,12 @@
 use bevy::{input::system::exit_on_esc_system, prelude::*, render::pass::ClearColor};
 
 mod consts;
+mod game;
 mod logo;
 mod menu;
 
 use crate::consts::*;
+use crate::game::UpstreamGamePlugins;
 use crate::logo::StudioLogoPlugin;
 use crate::menu::GameMenuPlugin;
 
@@ -29,11 +31,19 @@ impl FromWorld for FontAssets {
 
 fn main() {
   App::build()
+    .insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.9)))
+    .insert_resource(WindowDescriptor {
+      width: 1280.0,
+      height: 720.0,
+      vsync: true,
+      title: "Upstream".to_string(),
+      ..Default::default()
+    })
     .add_plugins(DefaultPlugins)
     .init_resource::<FontAssets>()
-    .insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.9)))
     .add_plugin(StudioLogoPlugin)
     .add_plugin(GameMenuPlugin)
+    .add_plugins(UpstreamGamePlugins)
     .add_startup_system(insert_camera.system())
     .add_state(AppState::StudioLogo)
     .add_system(exit_on_esc_system.system())

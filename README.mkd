@@ -1,0 +1,17 @@
+# Upstream (溯流而上)
+
+[Wiki][wiki]
+
+## Build
+
+```bash
+# preinstall (fast compile)
+pacman -S clang lld
+
+# build and run
+cargo run
+# release
+cargo build --release
+```
+
+[wiki]: https://kuzumajo.github.io/wiki/

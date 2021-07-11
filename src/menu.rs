@@ -1,83 +1,149 @@
 use crate::consts::*;
 use crate::FontAssets;
 use bevy::prelude::*;
+use bevy::app::AppExit;
 
 struct GameMenuUI;
+enum MenuButton {
+  Start,
+  Exit,
+  Settings,
+  Continue,
+  Staff,
+}
 
-struct MenuButtonMaterials {
+struct MenuMaterials {
   normal: Handle<ColorMaterial>,
   hovered: Handle<ColorMaterial>,
   pressed: Handle<ColorMaterial>,
 }
 
-impl FromWorld for MenuButtonMaterials {
+impl FromWorld for MenuMaterials {
   fn from_world(world: &mut World) -> Self {
     let mut materials = world.get_resource_mut::<Assets<ColorMaterial>>().unwrap();
 
-    MenuButtonMaterials {
-      normal: materials.add(Color::rgb(0.15, 0.15, 0.15).into()),
-      hovered: materials.add(Color::rgb(0.25, 0.25, 0.25).into()),
-      pressed: materials.add(Color::rgb(0.35, 0.75, 0.35).into()),
+    MenuMaterials {
+      normal: materials.add(Color::NONE.into()),
+      hovered: materials.add(Color::rgba(0.1, 0.1, 0.1, 0.1).into()),
+      pressed: materials.add(Color::rgba(0.1, 0.1, 0.1, 0.2).into()),
     }
   }
 }
 
-/// Open Studio Logo Page
-fn setup_menu(
-  mut commands: Commands,
-  menu_materials: Res<MenuButtonMaterials>,
-  font_assets: Res<FontAssets>,
-) {
+fn setup_menu(mut commands: Commands, materials: Res<MenuMaterials>, font_assets: Res<FontAssets>) {
   commands
-    .spawn_bundle(ButtonBundle {
+    .spawn_bundle(NodeBundle {
       style: Style {
-        size: Size::new(Val::Px(300.0), Val::Px(65.0)),
-        margin: Rect::all(Val::Auto),
-        justify_content: JustifyContent::Center,
-        align_items: AlignItems::Center,
+        size: Size::new(Val::Px(400.0), Val::Auto),
+        margin: Rect {
+          left: Val::Px(200.0),
+          top: Val::Auto,
+          bottom: Val::Auto,
+          ..Default::default()
+        },
+        flex_direction: FlexDirection::ColumnReverse,
         ..Default::default()
       },
-      material: menu_materials.normal.clone(),
+      material: materials.normal.clone(),
       ..Default::default()
     })
     .insert(GameMenuUI)
     .with_children(|parent| {
-      parent.spawn_bundle(TextBundle {
-        text: Text::with_section(
-          "Start",
-          TextStyle {
-            font: font_assets.default_font.clone(),
-            font_size: 40.0,
-            color: Color::WHITE,
-          },
-          Default::default(),
-        ),
-        ..Default::default()
+      vec![
+        (MenuButton::Start, "start"),
+        (MenuButton::Continue, "continue"),
+        (MenuButton::Settings, "settings"),
+        (MenuButton::Staff, "staff"),
+        (MenuButton::Exit, "exit"),
+      ]
+      .into_iter()
+      .for_each(|(button, title)| {
+        parent
+          .spawn_bundle(ButtonBundle {
+            style: Style {
+              size: Size::new(Val::Percent(100.0), Val::Px(65.0)),
+              margin: Rect::all(Val::Auto),
+              justify_content: JustifyContent::FlexStart,
+              align_items: AlignItems::Center,
+              ..Default::default()
+            },
+            material: materials.normal.clone(),
+            ..Default::default()
+          })
+          .insert(button)
+          .with_children(|parent| {
+            parent.spawn_bundle(TextBundle {
+              text: Text::with_section(
+                title,
+                TextStyle {
+                  font: font_assets.default_font.clone(),
+                  font_size: 40.0,
+                  color: Color::BLACK,
+                },
+                Default::default(),
+              ),
+              style: Style {
+                margin: Rect {
+                  left: Val::Px(20.0),
+                  ..Default::default()
+                },
+                ..Default::default()
+              },
+              ..Default::default()
+            });
+          });
       });
     });
-
-  trace!("initialized menu page");
 }
 
-fn button_system(
-  button_materials: Res<MenuButtonMaterials>,
+fn button_material_change(
+  materials: Res<MenuMaterials>,
   mut interaction_query: Query<
     (&Interaction, &mut Handle<ColorMaterial>),
     (Changed<Interaction>, With<Button>),
   >,
 ) {
   for (interaction, mut material) in interaction_query.iter_mut() {
-    match *interaction {
-      Interaction::Clicked => {
-        *material = button_materials.pressed.clone();
-      }
-      Interaction::Hovered => {
-        *material = button_materials.hovered.clone();
-      }
-      Interaction::None => {
-        *material = button_materials.normal.clone();
-      }
+    *material = match *interaction {
+      Interaction::Clicked => materials.pressed.clone(),
+      Interaction::Hovered => materials.hovered.clone(),
+      Interaction::None => materials.normal.clone(),
     }
+  }
+}
+
+fn button_click(
+  query: Query<(&Interaction, &MenuButton), Changed<Interaction>>,
+  mut state: ResMut<State<AppState>>,
+  mut app_exit_events: EventWriter<AppExit>,
+) {
+  for (interaction, menu_button) in query.iter() {
+    match *interaction {
+      Interaction::Clicked => match *menu_button {
+        MenuButton::Start => {
+          state.replace(AppState::InGame).unwrap();
+        }
+        MenuButton::Continue => {
+          // TODO
+        }
+        MenuButton::Settings => {
+          // TODO
+        }
+        MenuButton::Staff => {
+          // TODO
+        }
+        MenuButton::Exit => {
+          app_exit_events.send(AppExit);
+        }
+      },
+      _ => {}
+    }
+  }
+}
+
+fn exit_menu(mut commands: Commands, query: Query<Entity, With<GameMenuUI>>) {
+  for entity in query.iter() {
+    commands.entity(entity).despawn_recursive();
   }
 }
 
@@ -86,8 +152,13 @@ pub struct GameMenuPlugin;
 impl Plugin for GameMenuPlugin {
   fn build(&self, app: &mut AppBuilder) {
     app
-      .init_resource::<MenuButtonMaterials>()
+      .init_resource::<MenuMaterials>()
       .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(setup_menu.system()))
-      .add_system_set(SystemSet::on_update(AppState::Menu).with_system(button_system.system()));
+      .add_system_set(
+        SystemSet::on_update(AppState::Menu)
+          .with_system(button_material_change.system())
+          .with_system(button_click.system()),
+      )
+      .add_system_set(SystemSet::on_exit(AppState::Menu).with_system(exit_menu.system()));
   }
 }

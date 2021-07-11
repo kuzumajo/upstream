@@ -39,30 +39,33 @@ fn setup_logo(mut commands: Commands, font_assets: Res<FontAssets>) {
     })
     .insert(StudioLogoUI);
 
-  commands.insert_resource(StudioLogoTimer(Timer::from_seconds(5.0, false)));
-
-  trace!("initialized studio logo page");
+  commands.insert_resource(StudioLogoTimer(Timer::from_seconds(
+    STUDIO_LOGO_WAITING_SECONDS,
+    false,
+  )));
 }
 
-/// run timer system
 fn logic_logo(
   time: Res<Time>,
   mut timer: ResMut<StudioLogoTimer>,
   mut state: ResMut<State<AppState>>,
+  mouse_button_input: Res<Input<MouseButton>>,
 ) {
-  if timer.0.tick(time.delta()).just_finished() {
+  if timer.0.tick(time.delta()).just_finished()
+    || mouse_button_input.just_pressed(MouseButton::Left)
+  {
     state.replace(AppState::Menu).unwrap();
   }
 }
 
-/// exit the logo page
 fn exit_logo(mut commands: Commands, query: Query<Entity, With<StudioLogoUI>>) {
   for entity in query.iter() {
-    commands.entity(entity).despawn();
+    commands.entity(entity).despawn_recursive();
   }
   commands.remove_resource::<StudioLogoTimer>();
 }
 
+/// The starter studio logo page
 pub struct StudioLogoPlugin;
 
 impl Plugin for StudioLogoPlugin {
