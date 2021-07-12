@@ -1,5 +1,6 @@
 use crate::consts::*;
 use crate::FontAssets;
+use bevy::input::keyboard::KeyCode;
 use bevy::prelude::*;
 
 mod list;
@@ -42,37 +43,50 @@ fn setup_staff(
           StaffTextSize::Medium => 32.0,
           StaffTextSize::Small => 24.0,
         };
-        commands.spawn_bundle(Text2dBundle {
-          text: Text::with_section(message, TextStyle {
-            font: font_assets.default_font.clone(),
-            font_size,
-            color: Color::BLACK,
-          }, TextAlignment {
-            vertical: VerticalAlign::Center,
-            horizontal: HorizontalAlign::Center,
-          }),
-          transform: Transform::from_xyz(0.0, -total_y, 0.0),
-          ..Default::default()
-        }).insert(StaffUI).insert(StaffScroll);
+        commands
+          .spawn_bundle(Text2dBundle {
+            text: Text::with_section(
+              message,
+              TextStyle {
+                font: font_assets.default_font.clone(),
+                font_size,
+                color: Color::BLACK,
+              },
+              TextAlignment {
+                vertical: VerticalAlign::Bottom,
+                horizontal: HorizontalAlign::Center,
+              },
+            ),
+            transform: Transform::from_xyz(0.0, -total_y, 0.0),
+            ..Default::default()
+          })
+          .insert(StaffUI)
+          .insert(StaffScroll);
         total_y += font_size;
       }
     }
   }
   // buttons (right)
-  commands.spawn_bundle(NodeBundle {
-    style: Style {
-      size: Size::new(Val::Px(200.0), Val::Percent(100.0)),
-      position_type: PositionType::Absolute,
-      position: Rect {
-        right: Val::Px(0.0),
-        bottom: Val::Px(0.0),
+  commands
+    .spawn_bundle(NodeBundle {
+      style: Style {
+        size: Size::new(Val::Px(200.0), Val::Percent(100.0)),
+        position_type: PositionType::Absolute,
+        position: Rect {
+          right: Val::Px(0.0),
+          bottom: Val::Px(0.0),
+          ..Default::default()
+        },
         ..Default::default()
       },
+      material: materials.transparent.clone(),
       ..Default::default()
-    },
-    material: materials.transparent.clone(),
-    ..Default::default()
-  }).insert(StaffUI);
+    })
+    .insert(StaffUI);
+  commands.insert_resource(StartScrollTimer(Timer::from_seconds(
+    STAFF_LIST_WAITING_SECONDS,
+    false,
+  )))
 }
 
 fn scrolling_staff_list(
@@ -87,13 +101,17 @@ fn scrolling_staff_list(
   }
 }
 
-fn exit_staff(
-  mut commands: Commands,
-  query: Query<Entity, With<StaffUI>>,
-) {
+fn esc_to_exit(keyevent: Res<Input<KeyCode>>, mut state: ResMut<State<AppState>>) {
+  if keyevent.pressed(KeyCode::Escape) {
+    state.replace(AppState::Menu).unwrap();
+  }
+}
+
+fn exit_staff(mut commands: Commands, query: Query<Entity, With<StaffUI>>) {
   for entity in query.iter() {
     commands.entity(entity).despawn_recursive();
   }
+  commands.remove_resource::<StartScrollTimer>();
 }
 
 pub struct StaffPlugin;
@@ -101,10 +119,13 @@ pub struct StaffPlugin;
 impl Plugin for StaffPlugin {
   fn build(&self, app: &mut AppBuilder) {
     app
-      .insert_resource(StartScrollTimer(Timer::from_seconds(STAFF_LIST_WAITING_SECONDS, false)))
       .init_resource::<StaffMaterials>()
       .add_system_set(SystemSet::on_enter(AppState::Staff).with_system(setup_staff.system()))
-      .add_system_set(SystemSet::on_update(AppState::Staff).with_system(scrolling_staff_list.system()))
+      .add_system_set(
+        SystemSet::on_update(AppState::Staff)
+          .with_system(scrolling_staff_list.system())
+          .with_system(esc_to_exit.system()),
+      )
       .add_system_set(SystemSet::on_exit(AppState::Staff).with_system(exit_staff.system()));
   }
 }

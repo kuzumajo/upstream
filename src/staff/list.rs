@@ -1,5 +1,4 @@
 
-#[derive(Clone)]
 pub enum StaffTextSize {
   Ultra,
   Large,
@@ -7,7 +6,6 @@ pub enum StaffTextSize {
   Medium,
 }
 
-#[derive(Clone)]
 pub enum StaffTextLine {
   Text(&'static str, StaffTextSize),
   Space(f32),
@@ -47,7 +45,8 @@ pub fn get_staff_text() -> Vec<StaffTextLine> {
     Text("阿良良木 月火", Medium),
     Text("战场原 黑仪", Medium),
     Text("羽川 翼", Medium),
-    Text("忍野 忍(姬丝秀忒·雅赛劳拉莉昂·刃下心)", Medium),
+    Text("忍野 忍", Medium),
+    Text("(姬丝秀忒·雅赛劳拉莉昂·刃下心)", Small),
     Text("八九寺 真宵", Medium),
     Text("神原 骏河", Medium),
     Text("千石 抚子", Medium),
@@ -63,6 +62,11 @@ pub fn get_staff_text() -> Vec<StaffTextLine> {
     Text("满", Medium),
     Text("郁乃", Medium),
     Text("太", Medium),
+    Space(480.0),
+    Text("DIRECTED BY", Large),
+    Space(60.0),
+    Text("陈睿 LV6  你所热爱的，就是你的生活。", Medium),
+    Text("蒙古上单 LV5  你 妈什么时候死啊？", Medium),
     Space(480.0),
     Text("© KuzumajoStudio", Medium),
     Text("© 屑魔女工作室", Medium),
