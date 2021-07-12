@@ -2,6 +2,7 @@
 pub enum AppState {
   StudioLogo,
   Menu,
+  Staff,
   InGame,
 }
 
@@ -11,5 +12,8 @@ pub const STUDIO_LOGO_WAITING_SECONDS: f32 = 5.0;
 // control panel settings
 pub const HEALTH_BAR_WIDTH: f32 = 300.0;
 pub const ENERGY_BAR_WIDTH: f32 = 300.0;
+
+// staff list settings
+pub const STAFF_LIST_WAITING_SECONDS: f32 = 2.0;
 
 pub const PLAYER_NAME: &str = "蓿";

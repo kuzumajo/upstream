@@ -130,7 +130,7 @@ fn button_click(
           // TODO
         }
         MenuButton::Staff => {
-          // TODO
+          state.replace(AppState::Staff).unwrap();
         }
         MenuButton::Exit => {
           app_exit_events.send(AppExit);

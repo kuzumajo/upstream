@@ -1,14 +1,16 @@
-use bevy::{input::system::exit_on_esc_system, prelude::*, render::pass::ClearColor};
+use bevy::{prelude::*, render::pass::ClearColor};
 
 mod consts;
 mod game;
 mod logo;
 mod menu;
+mod staff;
 
 use crate::consts::*;
 use crate::game::UpstreamGamePlugins;
 use crate::logo::StudioLogoPlugin;
 use crate::menu::GameMenuPlugin;
+use crate::staff::StaffPlugin;
 
 fn insert_camera(mut commands: Commands) {
   commands.spawn_bundle(OrthographicCameraBundle::new_2d());
@@ -43,9 +45,9 @@ fn main() {
     .init_resource::<FontAssets>()
     .add_plugin(StudioLogoPlugin)
     .add_plugin(GameMenuPlugin)
+    .add_plugin(StaffPlugin)
     .add_plugins(UpstreamGamePlugins)
     .add_startup_system(insert_camera.system())
     .add_state(AppState::StudioLogo)
-    .add_system(exit_on_esc_system.system())
     .run();
 }
