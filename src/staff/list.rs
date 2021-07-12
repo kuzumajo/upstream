@@ -1,4 +1,3 @@
-
 pub enum StaffTextSize {
   Ultra,
   Large,

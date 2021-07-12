@@ -4,6 +4,7 @@ mod consts;
 mod game;
 mod logo;
 mod menu;
+mod saves;
 mod staff;
 
 use crate::consts::*;

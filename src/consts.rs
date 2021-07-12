@@ -1,9 +1,23 @@
+use serde::{Deserialize, Serialize};
+use std::time::{Duration, SystemTime};
+
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum AppState {
   StudioLogo,
   Menu,
   Staff,
   InGame,
+}
+
+/// Game Data
+#[derive(Serialize, Deserialize, Debug)]
+pub struct GameSave {
+  last_modified_time: SystemTime,
+  created_time: SystemTime,
+  total_playing_time: Duration,
+  saving_name: String,
+  unlocked_mahou: String,
+  money: u32,
 }
 
 // studio logo settings
