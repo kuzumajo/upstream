@@ -7,10 +7,10 @@ use bevy::prelude::*;
 struct GameMenuUI;
 enum MenuButton {
   Start,
-  Exit,
   Settings,
-  Continue,
+  Achievements,
   Staff,
+  Exit,
 }
 
 struct MenuMaterials {
@@ -52,8 +52,8 @@ fn setup_menu(mut commands: Commands, materials: Res<MenuMaterials>, font_assets
     .with_children(|parent| {
       vec![
         (MenuButton::Start, "start"),
-        (MenuButton::Continue, "continue"),
         (MenuButton::Settings, "settings"),
+        (MenuButton::Achievements, "achievements"),
         (MenuButton::Staff, "staff"),
         (MenuButton::Exit, "exit"),
       ]
@@ -123,13 +123,12 @@ fn button_click(
     match *interaction {
       Interaction::Clicked => match *menu_button {
         MenuButton::Start => {
-          commands.insert_resource(create_new_game_save());
-          state.replace(AppState::InGame).unwrap();
-        }
-        MenuButton::Continue => {
-          // TODO
+          state.replace(AppState::LoadGame).unwrap();
         }
         MenuButton::Settings => {
+          // TODO
+        }
+        MenuButton::Achievements => {
           // TODO
         }
         MenuButton::Staff => {

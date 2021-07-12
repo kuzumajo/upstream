@@ -7,6 +7,7 @@ pub enum AppState {
   Menu,
   Staff,
   InGame,
+  LoadGame,
 }
 
 /// Game Data

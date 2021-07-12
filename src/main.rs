@@ -6,12 +6,14 @@ mod logo;
 mod menu;
 mod saves;
 mod staff;
+mod loadgame;
 
 use crate::consts::*;
 use crate::game::UpstreamGamePlugins;
 use crate::logo::StudioLogoPlugin;
 use crate::menu::GameMenuPlugin;
 use crate::staff::StaffPlugin;
+use crate::loadgame::LoadGamePlugin;
 
 fn insert_camera(mut commands: Commands) {
   commands.spawn_bundle(OrthographicCameraBundle::new_2d());
@@ -47,6 +49,7 @@ fn main() {
     .add_plugin(StudioLogoPlugin)
     .add_plugin(GameMenuPlugin)
     .add_plugin(StaffPlugin)
+    .add_plugin(LoadGamePlugin)
     .add_plugins(UpstreamGamePlugins)
     .add_startup_system(insert_camera.system())
     .add_state(AppState::StudioLogo)

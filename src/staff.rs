@@ -12,7 +12,7 @@ struct StartScrollTimer(Timer);
 
 fn setup_staff(mut commands: Commands, font_assets: Res<FontAssets>) {
   // full list
-  let mut total_y = -60.0;
+  let mut total_y = -120.0;
   for text in get_staff_text() {
     match text {
       StaffTextLine::Space(height) => {
