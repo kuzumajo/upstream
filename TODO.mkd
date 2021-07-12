@@ -1,0 +1,4 @@
+# TODO list
+
+- [ ] **encrypt game savings**, `ring` is hard to understand how to use.
+

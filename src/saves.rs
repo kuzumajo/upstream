@@ -26,6 +26,9 @@ pub fn load_game_saves() -> Vec<Option<GameSave>> {
 }
 
 pub fn save_game_saves(save: &GameSave, index: u32) -> std::io::Result<()> {
+  if index >= 4 {
+    panic!("illegal index: {}", index);
+  }
   let save_dir = get_save_dir().unwrap();
   create_dir_all(&save_dir)?;
   let filename = save_dir.join(format!("save{}.dat", index));
