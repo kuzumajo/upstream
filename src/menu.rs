@@ -1,4 +1,5 @@
 use crate::consts::*;
+use crate::saves::create_new_game_save;
 use crate::FontAssets;
 use bevy::app::AppExit;
 use bevy::prelude::*;
@@ -113,6 +114,7 @@ fn button_material_change(
 }
 
 fn button_click(
+  mut commands: Commands,
   query: Query<(&Interaction, &MenuButton), Changed<Interaction>>,
   mut state: ResMut<State<AppState>>,
   mut app_exit_events: EventWriter<AppExit>,
@@ -121,6 +123,7 @@ fn button_click(
     match *interaction {
       Interaction::Clicked => match *menu_button {
         MenuButton::Start => {
+          commands.insert_resource(create_new_game_save());
           state.replace(AppState::InGame).unwrap();
         }
         MenuButton::Continue => {

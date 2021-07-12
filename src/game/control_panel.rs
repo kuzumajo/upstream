@@ -4,6 +4,9 @@ use bevy::prelude::*;
 
 struct ControlPanelUI;
 
+/// white bar to indicate how much damage recieved
+struct HealthLosing(f32);
+
 struct ControlPanelMaterials {
   transparent: Handle<ColorMaterial>,
   health_full: Handle<ColorMaterial>,
@@ -29,6 +32,10 @@ impl FromWorld for ControlPanelMaterials {
     }
   }
 }
+
+struct HealthBarUILosing;
+struct HealthBarUI;
+struct EnergyBarUI;
 
 fn setup_control_panel(
   mut commands: Commands,
@@ -94,22 +101,35 @@ fn setup_control_panel(
                 .spawn_bundle(NodeBundle {
                   style: Style {
                     size: Size::new(Val::Px(HEALTH_BAR_WIDTH * 0.82), Val::Percent(100.0)),
+                    position_type: PositionType::Absolute,
+                    position: Rect {
+                      top: Val::Px(0.0),
+                      left: Val::Px(0.0),
+                      ..Default::default()
+                    },
                     ..Default::default()
                   },
                   material: materials.health_losing.clone(),
                   ..Default::default()
                 })
-                .with_children(|parent| {
-                  // health bar (now)
-                  parent.spawn_bundle(NodeBundle {
-                    style: Style {
-                      size: Size::new(Val::Px(HEALTH_BAR_WIDTH * 0.56), Val::Percent(100.0)),
+                .insert(HealthBarUILosing);
+              // health bar (now)
+              parent
+                .spawn_bundle(NodeBundle {
+                  style: Style {
+                    size: Size::new(Val::Px(HEALTH_BAR_WIDTH * 0.56), Val::Percent(100.0)),
+                    position_type: PositionType::Absolute,
+                    position: Rect {
+                      top: Val::Px(0.0),
+                      left: Val::Px(0.0),
                       ..Default::default()
                     },
-                    material: materials.health_now_safe.clone(),
                     ..Default::default()
-                  });
-                });
+                  },
+                  material: materials.health_now_safe.clone(),
+                  ..Default::default()
+                })
+                .insert(HealthBarUI);
             });
           // energy bar
           parent
@@ -127,23 +147,64 @@ fn setup_control_panel(
             })
             .with_children(|parent| {
               // energy bar (now)
-              parent.spawn_bundle(NodeBundle {
-                style: Style {
-                  size: Size::new(Val::Px(ENERGY_BAR_WIDTH * 0.24), Val::Percent(100.0)),
+              parent
+                .spawn_bundle(NodeBundle {
+                  style: Style {
+                    size: Size::new(Val::Px(ENERGY_BAR_WIDTH * 0.24), Val::Percent(100.0)),
+                    ..Default::default()
+                  },
+                  material: materials.energy_now.clone(),
                   ..Default::default()
-                },
-                material: materials.energy_now.clone(),
-                ..Default::default()
-              });
+                })
+                .insert(EnergyBarUI);
             });
         });
     });
+  commands.insert_resource(HealthLosing(0.0));
+}
+
+fn update_health_bar(
+  mut query: Query<(&mut Style, &mut Handle<ColorMaterial>), With<HealthBarUI>>,
+  save: Res<GameSave>,
+  materials: Res<ControlPanelMaterials>,
+) {
+  for (mut style, mut material) in query.iter_mut() {
+    let percent = save.health as f32 / save.health_limit as f32;
+    style.size.width = Val::Px(HEALTH_BAR_WIDTH * percent);
+    *material = if percent > 0.2 {
+      materials.health_now_safe.clone()
+    } else {
+      materials.health_now_danger.clone()
+    };
+  }
+}
+
+fn update_health_losing_bar(
+  mut query: Query<&mut Style, With<HealthBarUILosing>>,
+  save: Res<GameSave>,
+  mut losing: ResMut<HealthLosing>,
+) {
+  for mut style in query.iter_mut() {
+    let percent = save.health as f32 / save.health_limit as f32;
+    let last = losing.0;
+    let now = last - (last - percent) * 0.05;
+    style.size.width = Val::Px(HEALTH_BAR_WIDTH * now);
+    losing.0 = now;
+  }
+}
+
+fn update_energy_bar(mut query: Query<&mut Style, With<EnergyBarUI>>, save: Res<GameSave>) {
+  for mut style in query.iter_mut() {
+    let percent = save.energy as f32 / save.energy_limit as f32;
+    style.size.width = Val::Px(ENERGY_BAR_WIDTH * percent);
+  }
 }
 
 fn destroy_control_panel(mut commands: Commands, query: Query<Entity, With<ControlPanelUI>>) {
   for entity in query.iter() {
     commands.entity(entity).despawn_recursive();
   }
+  commands.remove_resource::<HealthLosing>();
 }
 
 /// Manage the whole player control panel
@@ -155,6 +216,12 @@ impl Plugin for ControlPanelPlugin {
       .init_resource::<ControlPanelMaterials>()
       .add_system_set(
         SystemSet::on_enter(AppState::InGame).with_system(setup_control_panel.system()),
+      )
+      .add_system_set(
+        SystemSet::on_update(AppState::InGame)
+          .with_system(update_health_bar.system())
+          .with_system(update_energy_bar.system())
+          .with_system(update_health_losing_bar.system()),
       )
       .add_system_set(
         SystemSet::on_exit(AppState::InGame).with_system(destroy_control_panel.system()),

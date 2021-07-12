@@ -58,7 +58,7 @@ fn logic_logo(
   }
 }
 
-fn exit_logo(mut commands: Commands, query: Query<Entity, With<StudioLogoUI>>) {
+fn destroy_logo(mut commands: Commands, query: Query<Entity, With<StudioLogoUI>>) {
   for entity in query.iter() {
     commands.entity(entity).despawn_recursive();
   }
@@ -73,6 +73,6 @@ impl Plugin for StudioLogoPlugin {
     app
       .add_system_set(SystemSet::on_enter(AppState::StudioLogo).with_system(setup_logo.system()))
       .add_system_set(SystemSet::on_update(AppState::StudioLogo).with_system(logic_logo.system()))
-      .add_system_set(SystemSet::on_exit(AppState::StudioLogo).with_system(exit_logo.system()));
+      .add_system_set(SystemSet::on_exit(AppState::StudioLogo).with_system(destroy_logo.system()));
   }
 }
