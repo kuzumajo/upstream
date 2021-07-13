@@ -3,6 +3,7 @@ use crate::saves::GameSave;
 use crate::FontAssets;
 use bevy::prelude::*;
 use crate::saves::load_game_saves;
+use crate::game::GameAutoSaveSlot;
 use crate::text_input::TextInputFinishTask;
 
 struct LoadGameUI;
@@ -147,7 +148,7 @@ fn slot_material_change(
   }
 }
 
-fn empty_slot_button_click(
+fn slot_button_click(
   mut commands: Commands,
   mut interaction_query: Query<
     (&Interaction, &GameSaveSlot),
@@ -158,8 +159,14 @@ fn empty_slot_button_click(
   for (interaction, save_slot) in interaction_query.iter_mut() {
     match *interaction {
       Interaction::Clicked => {
-        if save_slot.0.is_none() {
-          commands.insert_resource(TextInputFinishTask::StartNewGame(save_slot.1));
+        commands.insert_resource(GameAutoSaveSlot(save_slot.1));
+        if let Some(save) = &save_slot.0 {
+          // start the game directly
+          commands.insert_resource(save.clone());
+          state.replace(AppState::InGame).unwrap();
+        } else {
+          // start the game after type its saving name
+          commands.insert_resource(TextInputFinishTask::StartNewGame);
           state.replace(AppState::TextInput).unwrap();
         }
       }
@@ -190,7 +197,7 @@ impl Plugin for LoadGamePlugin {
       .add_system_set(
         SystemSet::on_update(AppState::LoadGame)
           .with_system(slot_material_change.system())
-          .with_system(empty_slot_button_click.system())
+          .with_system(slot_button_click.system())
       )
       .add_system_set(
         SystemSet::on_exit(AppState::LoadGame)

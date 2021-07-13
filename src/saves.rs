@@ -11,7 +11,7 @@ use serde::Deserialize;
 use serde::Serialize;
 
 /// Game Data
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GameSave {
   /// last modified time
   pub last_modified_time: SystemTime,

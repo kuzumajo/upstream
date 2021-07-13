@@ -1,35 +1,20 @@
 use crate::consts::*;
 use crate::saves::GameSave;
 use crate::FontAssets;
-use crate::game::GameAutoSaveSlot;
 use bevy::prelude::*;
 use bevy::window::ReceivedCharacter;
 
 pub enum TextInputFinishTask {
-  StartNewGame(u8),
+  StartNewGame,
 }
 
 struct TextInputUI;
 struct TextInputTextUI;
-struct TextInputMaterials {
-  background: Handle<ColorMaterial>,
-}
-
-impl FromWorld for TextInputMaterials {
-  fn from_world(world: &mut World) -> Self {
-    let mut materials = world.get_resource_mut::<Assets<ColorMaterial>>().unwrap();
-
-    TextInputMaterials {
-      background: materials.add(Color::NONE.into()),
-    }
-  }
-}
 
 struct TextInputText(String);
 
 fn setup_text_input(
   mut commands: Commands,
-  materials: Res<TextInputMaterials>,
   font_assets: Res<FontAssets>,
 ) {
   commands.spawn_bundle(Text2dBundle {
@@ -72,11 +57,12 @@ fn input_text(
       chars.next_back();
       text.0 = chars.as_str().to_string();
     } else if event.char == '\r' {
-      match *task {
-        TextInputFinishTask::StartNewGame(slot) => {
-          commands.insert_resource(GameAutoSaveSlot(slot));
-          commands.insert_resource(GameSave::new(text.0.clone()));
-          state.replace(AppState::InGame).unwrap();
+      if !text.0.is_empty() {
+        match *task {
+          TextInputFinishTask::StartNewGame => {
+            commands.insert_resource(GameSave::new(text.0.clone()));
+            state.replace(AppState::InGame).unwrap();
+          }
         }
       }
     } else {
@@ -113,7 +99,6 @@ pub struct TextInputPlugin;
 impl Plugin for TextInputPlugin {
   fn build(&self, app: &mut AppBuilder) {
     app
-      .init_resource::<TextInputMaterials>()
       .add_system_set(
         SystemSet::on_enter(AppState::TextInput)
           .with_system(setup_text_input.system())
