@@ -124,7 +124,7 @@ fn button_click(
           state.replace(AppState::LoadGame).unwrap();
         }
         MenuButton::Settings => {
-          // TODO
+          state.replace(AppState::Settings).unwrap();
         }
         MenuButton::Achievements => {
           // TODO

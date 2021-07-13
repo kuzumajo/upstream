@@ -1,10 +1,21 @@
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum AppState {
+  /// studio logo page
+  /// game entrance
   StudioLogo,
+  /// game menu
   Menu,
+  /// staff page
   Staff,
+  /// gaming page
+  /// WARNING: make sure Res<GameSave> exists
   InGame,
+  /// load saves or start a new game
   LoadGame,
+  /// game settings
+  Settings,
+  /// text input page
+  /// designed for type save names only
   TextInput,
 }
 

@@ -1,13 +1,13 @@
 use bincode::deserialize;
 use home::home_dir;
+use serde::Deserialize;
+use serde::Serialize;
 use std::fs::create_dir_all;
 use std::fs::read;
 use std::fs::write;
 use std::path::PathBuf;
 use std::time::Duration;
 use std::time::SystemTime;
-use serde::Deserialize;
-use serde::Serialize;
 
 /// Game Data
 #[derive(Serialize, Deserialize, Debug, Clone)]

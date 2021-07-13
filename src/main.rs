@@ -1,20 +1,24 @@
 use bevy::{prelude::*, render::pass::ClearColor};
 
+mod config;
 mod consts;
 mod game;
+mod load_game;
 mod logo;
 mod menu;
 mod saves;
+mod settings;
 mod staff;
-mod load_game;
 mod text_input;
 
+use crate::config::GameConfig;
 use crate::consts::*;
 use crate::game::UpstreamGamePlugins;
+use crate::load_game::LoadGamePlugin;
 use crate::logo::StudioLogoPlugin;
 use crate::menu::GameMenuPlugin;
+use crate::settings::SettingsPlugin;
 use crate::staff::StaffPlugin;
-use crate::load_game::LoadGamePlugin;
 use crate::text_input::TextInputPlugin;
 
 fn insert_camera(mut commands: Commands) {
@@ -37,15 +41,12 @@ impl FromWorld for FontAssets {
 }
 
 fn main() {
+  let game_config = GameConfig::load();
+
   App::build()
     .insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.9)))
-    .insert_resource(WindowDescriptor {
-      width: 1280.0,
-      height: 720.0,
-      vsync: true,
-      title: "Upstream".to_string(),
-      ..Default::default()
-    })
+    .insert_resource(game_config.get_window_descriptor())
+    .insert_resource(game_config)
     .add_plugins(DefaultPlugins)
     .init_resource::<FontAssets>()
     .add_plugin(StudioLogoPlugin)
@@ -53,6 +54,7 @@ fn main() {
     .add_plugin(StaffPlugin)
     .add_plugin(LoadGamePlugin)
     .add_plugin(TextInputPlugin)
+    .add_plugin(SettingsPlugin)
     .add_plugins(UpstreamGamePlugins)
     .add_startup_system(insert_camera.system())
     .add_state(AppState::StudioLogo)
