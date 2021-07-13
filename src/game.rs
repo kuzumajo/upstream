@@ -6,6 +6,8 @@ mod game_saves;
 use control_panel::ControlPanelPlugin;
 use game_saves::GameSavePlugin;
 
+pub use game_saves::GameAutoSaveSlot;
+
 /// Whole game logics and UI performances
 pub struct UpstreamGamePlugins;
 

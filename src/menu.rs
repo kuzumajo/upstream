@@ -1,5 +1,4 @@
 use crate::consts::*;
-use crate::saves::create_new_game_save;
 use crate::FontAssets;
 use bevy::app::AppExit;
 use bevy::prelude::*;

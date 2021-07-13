@@ -1,7 +1,9 @@
 use crate::consts::*;
+use crate::saves::GameSave;
 use crate::FontAssets;
 use bevy::prelude::*;
 use crate::saves::load_game_saves;
+use crate::text_input::TextInputFinishTask;
 
 struct LoadGameUI;
 struct LoadGameMaterials {
@@ -24,17 +26,11 @@ impl FromWorld for LoadGameMaterials {
   }
 }
 
-enum GameSaveSlot {
-  Slot0,
-  Slot1,
-  Slot2,
-  Slot3,
-}
+struct GameSaveSlot(Option<GameSave>, u8);
 
 fn make_save_slot(
   parent: &mut ChildBuilder,
   slot: GameSaveSlot,
-  save: Option<GameSave>,
   materials: &Res<LoadGameMaterials>,
   font_assets: &Res<FontAssets>,
 ) {
@@ -48,10 +44,10 @@ fn make_save_slot(
     },
     material: materials.slot_normal.clone(),
     ..Default::default()
-  }).insert(slot).with_children(|parent| {
-    if let Some(save) = save {
+  }).with_children(|parent| {
+    if let Some(save) = &slot.0 {
       parent.spawn_bundle(TextBundle {
-        text: Text::with_section(save.saving_name, TextStyle {
+        text: Text::with_section(save.saving_name.clone(), TextStyle {
           font: font_assets.default_font.clone(),
           font_size: 20.0,
           color: Color::BLACK,
@@ -76,7 +72,7 @@ fn make_save_slot(
         ..Default::default()
       });
     }
-  });
+  }).insert(slot);
 }
 
 fn setup_loadgame(
@@ -115,8 +111,8 @@ fn setup_loadgame(
         material: materials.transparent.clone(),
         ..Default::default()
       }).with_children(|parent| {
-        make_save_slot(parent, GameSaveSlot::Slot0, save0, &materials, &font_assets);
-        make_save_slot(parent, GameSaveSlot::Slot2, save2, &materials, &font_assets);
+        make_save_slot(parent, GameSaveSlot(save0, 0), &materials, &font_assets);
+        make_save_slot(parent, GameSaveSlot(save2, 2), &materials, &font_assets);
       });
       // right
       parent.spawn_bundle(NodeBundle {
@@ -129,8 +125,8 @@ fn setup_loadgame(
         material: materials.transparent.clone(),
         ..Default::default()
       }).with_children(|parent| {
-        make_save_slot(parent, GameSaveSlot::Slot1, save1, &materials, &font_assets);
-        make_save_slot(parent, GameSaveSlot::Slot3, save3, &materials, &font_assets);
+        make_save_slot(parent, GameSaveSlot(save1, 1), &materials, &font_assets);
+        make_save_slot(parent, GameSaveSlot(save3, 3), &materials, &font_assets);
       });
     });
 }
@@ -147,6 +143,27 @@ fn slot_material_change(
       Interaction::Clicked => materials.slot_pressed.clone(),
       Interaction::Hovered => materials.slot_hover.clone(),
       Interaction::None => materials.slot_normal.clone(),
+    }
+  }
+}
+
+fn empty_slot_button_click(
+  mut commands: Commands,
+  mut interaction_query: Query<
+    (&Interaction, &GameSaveSlot),
+    (Changed<Interaction>, With<Button>),
+  >,
+  mut state: ResMut<State<AppState>>,
+) {
+  for (interaction, save_slot) in interaction_query.iter_mut() {
+    match *interaction {
+      Interaction::Clicked => {
+        if save_slot.0.is_none() {
+          commands.insert_resource(TextInputFinishTask::StartNewGame(save_slot.1));
+          state.replace(AppState::TextInput).unwrap();
+        }
+      }
+      _ => {}
     }
   }
 }
@@ -173,6 +190,7 @@ impl Plugin for LoadGamePlugin {
       .add_system_set(
         SystemSet::on_update(AppState::LoadGame)
           .with_system(slot_material_change.system())
+          .with_system(empty_slot_button_click.system())
       )
       .add_system_set(
         SystemSet::on_exit(AppState::LoadGame)
