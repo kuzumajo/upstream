@@ -2,7 +2,6 @@ use crate::consts::*;
 use crate::saves::GameSave;
 use crate::FontAssets;
 use bevy::prelude::*;
-use crate::saves::load_game_saves;
 use crate::game::GameAutoSaveSlot;
 use crate::text_input::TextInputFinishTask;
 
@@ -81,15 +80,6 @@ fn setup_loadgame(
   font_assets: Res<FontAssets>,
   materials: Res<LoadGameMaterials>,
 ) {
-
-  let mut saves = load_game_saves();
-  assert_eq!(saves.len(), 4);
-  let save3 = saves.pop().unwrap();
-  let save2 = saves.pop().unwrap();
-  let save1 = saves.pop().unwrap();
-  let save0 = saves.pop().unwrap();
-  assert_eq!(saves.len(), 0);
-
   commands.spawn_bundle(NodeBundle {
     style: Style {
       size: Size::new(Val::Percent(80.0), Val::Percent(80.0)),
@@ -112,8 +102,8 @@ fn setup_loadgame(
         material: materials.transparent.clone(),
         ..Default::default()
       }).with_children(|parent| {
-        make_save_slot(parent, GameSaveSlot(save0, 0), &materials, &font_assets);
-        make_save_slot(parent, GameSaveSlot(save2, 2), &materials, &font_assets);
+        make_save_slot(parent, GameSaveSlot(GameSave::load(0), 0), &materials, &font_assets);
+        make_save_slot(parent, GameSaveSlot(GameSave::load(2), 2), &materials, &font_assets);
       });
       // right
       parent.spawn_bundle(NodeBundle {
@@ -126,8 +116,8 @@ fn setup_loadgame(
         material: materials.transparent.clone(),
         ..Default::default()
       }).with_children(|parent| {
-        make_save_slot(parent, GameSaveSlot(save1, 1), &materials, &font_assets);
-        make_save_slot(parent, GameSaveSlot(save3, 3), &materials, &font_assets);
+        make_save_slot(parent, GameSaveSlot(GameSave::load(1), 1), &materials, &font_assets);
+        make_save_slot(parent, GameSaveSlot(GameSave::load(3), 3), &materials, &font_assets);
       });
     });
 }

@@ -113,7 +113,6 @@ fn button_material_change(
 }
 
 fn button_click(
-  mut commands: Commands,
   query: Query<(&Interaction, &MenuButton), Changed<Interaction>>,
   mut state: ResMut<State<AppState>>,
   mut app_exit_events: EventWriter<AppExit>,
