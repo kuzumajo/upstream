@@ -261,13 +261,13 @@ impl Plugin for LoadGamePlugin {
       .add_system_set(
         SystemSet::on_pause(AppState::LoadGame)
           .with_system(hide_ui.system())
-          .with_system(hide_text.system())
+          .with_system(hide_text.system()),
       )
       .add_system_set(
         SystemSet::on_resume(AppState::LoadGame)
           .with_system(resume_game.system().label("check"))
           .with_system(resume_ui.system().after("check"))
-          .with_system(resume_text.system().after("check"))
+          .with_system(resume_text.system().after("check")),
       );
   }
 }

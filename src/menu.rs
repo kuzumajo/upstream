@@ -190,12 +190,12 @@ impl Plugin for GameMenuPlugin {
       .add_system_set(
         SystemSet::on_pause(AppState::Menu)
           .with_system(hide_ui.system())
-          .with_system(hide_text.system())
+          .with_system(hide_text.system()),
       )
       .add_system_set(
         SystemSet::on_resume(AppState::Menu)
           .with_system(resume_ui.system())
-          .with_system(resume_text.system())
+          .with_system(resume_text.system()),
       );
   }
 }
