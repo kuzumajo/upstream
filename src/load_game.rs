@@ -202,25 +202,38 @@ fn slot_button_click(
   }
 }
 
-fn pause_load_game(mut query: Query<&mut Style, With<LoadGameUI>>) {
+fn hide_ui(mut query: Query<&mut Style, With<LoadGameUI>>) {
   for mut style in query.iter_mut() {
     style.display = Display::None;
   }
 }
 
-fn resume_load_game(
+fn hide_text(mut query: Query<&mut Visible, With<Text>>) {
+  for mut visible in query.iter_mut() {
+    visible.is_visible = false;
+  }
+}
+
+fn resume_game(
   mut commands: Commands,
   text: Option<Res<TextInputText>>,
   mut state: ResMut<State<AppState>>,
-  mut query: Query<&mut Style, With<LoadGameUI>>,
 ) {
   if let Some(text) = text {
     commands.insert_resource(GameSave::new(text.0.clone()));
     state.replace(AppState::InGame).unwrap();
-  } else {
-    for mut style in query.iter_mut() {
-      style.display = Display::default();
-    }
+  }
+}
+
+fn resume_ui(mut query: Query<&mut Style, With<LoadGameUI>>) {
+  for mut style in query.iter_mut() {
+    style.display = Display::default();
+  }
+}
+
+fn resume_text(mut query: Query<&mut Visible, With<Text>>) {
+  for mut visible in query.iter_mut() {
+    visible.is_visible = true;
   }
 }
 
@@ -245,9 +258,16 @@ impl Plugin for LoadGamePlugin {
       .add_system_set(
         SystemSet::on_exit(AppState::LoadGame).with_system(destroy_load_game.system()),
       )
-      .add_system_set(SystemSet::on_pause(AppState::LoadGame).with_system(pause_load_game.system()))
       .add_system_set(
-        SystemSet::on_resume(AppState::LoadGame).with_system(resume_load_game.system()),
+        SystemSet::on_pause(AppState::LoadGame)
+          .with_system(hide_ui.system())
+          .with_system(hide_text.system())
+      )
+      .add_system_set(
+        SystemSet::on_resume(AppState::LoadGame)
+          .with_system(resume_game.system().label("check"))
+          .with_system(resume_ui.system().after("check"))
+          .with_system(resume_text.system().after("check"))
       );
   }
 }

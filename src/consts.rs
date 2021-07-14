@@ -29,4 +29,7 @@ pub const ENERGY_BAR_WIDTH: f32 = 300.0;
 // staff list settings
 pub const STAFF_LIST_WAITING_SECONDS: f32 = 2.0;
 
+// settings
+pub const RESOLUTION_LIST: [(u32, u32); 2] = [(1280, 720), (1920, 1080)];
+
 pub const PLAYER_NAME: &str = "蓿";

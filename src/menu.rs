@@ -4,6 +4,8 @@ use bevy::app::AppExit;
 use bevy::prelude::*;
 
 struct GameMenuUI;
+struct GameMenuButtonUI;
+
 enum MenuButton {
   Start,
   Settings,
@@ -71,6 +73,7 @@ fn setup_menu(mut commands: Commands, materials: Res<MenuMaterials>, font_assets
             ..Default::default()
           })
           .insert(button)
+          .insert(GameMenuButtonUI)
           .with_children(|parent| {
             parent.spawn_bundle(TextBundle {
               text: Text::with_section(
@@ -100,7 +103,7 @@ fn button_material_change(
   materials: Res<MenuMaterials>,
   mut interaction_query: Query<
     (&Interaction, &mut Handle<ColorMaterial>),
-    (Changed<Interaction>, With<Button>),
+    (Changed<Interaction>, With<GameMenuButtonUI>),
   >,
 ) {
   for (interaction, mut material) in interaction_query.iter_mut() {
@@ -121,10 +124,10 @@ fn button_click(
     match *interaction {
       Interaction::Clicked => match *menu_button {
         MenuButton::Start => {
-          state.replace(AppState::LoadGame).unwrap();
+          state.push(AppState::LoadGame).unwrap();
         }
         MenuButton::Settings => {
-          state.replace(AppState::Settings).unwrap();
+          state.push(AppState::Settings).unwrap();
         }
         MenuButton::Achievements => {
           // TODO
@@ -141,7 +144,31 @@ fn button_click(
   }
 }
 
-fn exit_menu(mut commands: Commands, query: Query<Entity, With<GameMenuUI>>) {
+fn hide_ui(mut query: Query<&mut Style, With<GameMenuUI>>) {
+  for mut style in query.iter_mut() {
+    style.display = Display::None;
+  }
+}
+
+fn hide_text(mut query: Query<&mut Visible, With<Text>>) {
+  for mut visible in query.iter_mut() {
+    visible.is_visible = false;
+  }
+}
+
+fn resume_ui(mut query: Query<&mut Style, With<GameMenuUI>>) {
+  for mut style in query.iter_mut() {
+    style.display = Display::default();
+  }
+}
+
+fn resume_text(mut query: Query<&mut Visible, With<Text>>) {
+  for mut visible in query.iter_mut() {
+    visible.is_visible = true;
+  }
+}
+
+fn destroy_menu(mut commands: Commands, query: Query<Entity, With<GameMenuUI>>) {
   for entity in query.iter() {
     commands.entity(entity).despawn_recursive();
   }
@@ -159,6 +186,16 @@ impl Plugin for GameMenuPlugin {
           .with_system(button_material_change.system())
           .with_system(button_click.system()),
       )
-      .add_system_set(SystemSet::on_exit(AppState::Menu).with_system(exit_menu.system()));
+      .add_system_set(SystemSet::on_exit(AppState::Menu).with_system(destroy_menu.system()))
+      .add_system_set(
+        SystemSet::on_pause(AppState::Menu)
+          .with_system(hide_ui.system())
+          .with_system(hide_text.system())
+      )
+      .add_system_set(
+        SystemSet::on_resume(AppState::Menu)
+          .with_system(resume_ui.system())
+          .with_system(resume_text.system())
+      );
   }
 }
