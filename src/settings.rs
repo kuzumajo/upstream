@@ -1,5 +1,6 @@
 use crate::config::GameConfig;
 use crate::consts::*;
+use crate::text_input::TextInputText;
 use crate::FontAssets;
 use bevy::prelude::*;
 
@@ -18,12 +19,24 @@ struct SettingsMaterials {
   radio_uncheck_normal: Handle<ColorMaterial>,
   radio_uncheck_hover: Handle<ColorMaterial>,
 
+  slide_button: Handle<ColorMaterial>,
+  slide_bar: Handle<ColorMaterial>,
+
   transparent: Handle<ColorMaterial>,
 }
 
+struct SettingStringButton;
+struct SettingRadioButton;
+struct SettingSlideButton;
+struct SettingSelectButton;
+
 impl FromWorld for SettingsMaterials {
   fn from_world(world: &mut World) -> Self {
-    let mut materials = world.get_resource_mut::<Assets<ColorMaterial>>().unwrap();
+    let world_cell = world.cell();
+    let mut materials = world_cell
+      .get_resource_mut::<Assets<ColorMaterial>>()
+      .unwrap();
+    let asset_server = world_cell.get_resource::<AssetServer>().unwrap();
 
     SettingsMaterials {
       button_pressed: materials.add(Color::BLUE.into()),
@@ -37,6 +50,9 @@ impl FromWorld for SettingsMaterials {
       radio_uncheck_pressed: materials.add(Color::BLUE.into()),
       radio_uncheck_normal: materials.add(Color::RED.into()),
       radio_uncheck_hover: materials.add(Color::GREEN.into()),
+
+      slide_button: materials.add(asset_server.load("images/slidebutton.png").into()),
+      slide_bar: materials.add(asset_server.load("images/slidebar.png").into()),
 
       transparent: materials.add(Color::YELLOW.into()),
     }
@@ -262,7 +278,7 @@ fn setup_settings(
                 justify_content: JustifyContent::Center,
                 ..Default::default()
               },
-              // material: materials.transparent.clone(),
+              material: materials.transparent.clone(),
               ..Default::default()
             })
             .with_children(|parent| {
@@ -271,7 +287,7 @@ fn setup_settings(
                 let st = config.get_settings_type(item);
 
                 parent
-                  .spawn_bundle(ButtonBundle {
+                  .spawn_bundle(NodeBundle {
                     style: Style {
                       size: Size::new(Val::Auto, Val::Px(50.0)),
                       margin: Rect {
@@ -288,18 +304,28 @@ fn setup_settings(
                   })
                   .with_children(|parent| match &st {
                     String(value) => {
-                      parent.spawn_bundle(TextBundle {
-                        text: Text::with_section(
-                          value,
-                          TextStyle {
-                            font: font_assets.default_font.clone(),
-                            font_size: 32.0,
-                            color: Color::BLACK,
-                          },
-                          Default::default(),
-                        ),
-                        ..Default::default()
-                      });
+                      // string values
+                      parent
+                        .spawn_bundle(ButtonBundle {
+                          material: materials.transparent.clone(),
+                          ..Default::default()
+                        })
+                        .with_children(|parent| {
+                          parent.spawn_bundle(TextBundle {
+                            text: Text::with_section(
+                              value,
+                              TextStyle {
+                                font: font_assets.default_font.clone(),
+                                font_size: 32.0,
+                                color: Color::BLACK,
+                              },
+                              Default::default(),
+                            ),
+                            ..Default::default()
+                          });
+                        })
+                        .insert(st)
+                        .insert(SettingStringButton);
                     }
                     Ratio(value) => {
                       parent.spawn_bundle(NodeBundle {
@@ -321,7 +347,7 @@ fn setup_settings(
                           size: Size::new(Val::Px(500.0), Val::Px(10.0)),
                           ..Default::default()
                         },
-                        material: materials.radio_check_normal.clone(),
+                        material: materials.slide_bar.clone(),
                         ..Default::default()
                       });
                       parent.spawn_bundle(NodeBundle {
@@ -335,7 +361,7 @@ fn setup_settings(
                           },
                           ..Default::default()
                         },
-                        material: materials.radio_uncheck_normal.clone(),
+                        material: materials.slide_button.clone(),
                         ..Default::default()
                       });
                     }
@@ -353,8 +379,7 @@ fn setup_settings(
                         ..Default::default()
                       });
                     }
-                  })
-                  .insert(st);
+                  });
               }
             });
         });
@@ -377,7 +402,7 @@ fn button_material_change(
   }
 }
 
-fn button_clicked(
+fn nav_button_clicked(
   mut state: ResMut<State<AppState>>,
   query: Query<(&Interaction, &SettingsButton), (Changed<Interaction>, With<SettingsButtonUI>)>,
 ) {
@@ -399,9 +424,79 @@ fn button_clicked(
   }
 }
 
+enum SettingsInputTextReason {
+  ChangeStringValue(Entity),
+}
+
+fn string_button_clicked(
+  mut commands: Commands,
+  mut state: ResMut<State<AppState>>,
+  query: Query<(&Interaction, Entity, &SettingType), With<SettingStringButton>>,
+) {
+  for (interaction, entity, stype) in query.iter() {
+    match *interaction {
+      Interaction::Clicked => {
+        commands.insert_resource(SettingsInputTextReason::ChangeStringValue(entity.clone()));
+        if let SettingType::String(string) = stype {
+          commands.insert_resource(TextInputText(string.clone()));
+        }
+        state.push(AppState::TextInput).unwrap();
+      }
+      _ => {}
+    }
+  }
+}
+
+fn resume_settings(
+  mut commands: Commands,
+  reason: Option<Res<SettingsInputTextReason>>,
+  input: Option<Res<TextInputText>>,
+  mut query: Query<&mut SettingType>,
+) {
+  if let Some(reason) = reason {
+    match *reason {
+      SettingsInputTextReason::ChangeStringValue(entity) => {
+        if let Ok(mut stype) = query.get_mut(entity) {
+          if let Some(input) = input {
+            *stype = SettingType::String(input.0.clone());
+            commands.remove_resource::<TextInputText>();
+          }
+        }
+      }
+    }
+  }
+}
+
+fn update_string_settings(
+  query: Query<(&SettingType, &Children), (Changed<SettingType>, With<SettingStringButton>)>,
+  mut text_query: Query<&mut Text>,
+) {
+  for (stype, children) in query.iter() {
+    if let SettingType::String(value) = stype {
+      for child in children.iter() {
+        if let Ok(mut text) = text_query.get_mut(*child) {
+          text.sections[0].value = value.clone();
+        }
+      }
+    }
+  }
+}
+
 fn destroy_settings(mut commands: Commands, query: Query<Entity, With<SettingsUI>>) {
   for entity in query.iter() {
     commands.entity(entity).despawn_recursive();
+  }
+}
+
+fn hide_ui(mut query: Query<&mut Style, With<SettingsUI>>) {
+  for mut style in query.iter_mut() {
+    style.display = Display::None;
+  }
+}
+
+fn resume_ui(mut query: Query<&mut Style, With<SettingsUI>>) {
+  for mut style in query.iter_mut() {
+    style.display = Display::default();
   }
 }
 
@@ -416,10 +511,16 @@ impl Plugin for SettingsPlugin {
       .add_system_set(
         SystemSet::on_update(AppState::Settings)
           .with_system(button_material_change.system())
-          .with_system(button_clicked.system()),
+          .with_system(nav_button_clicked.system())
+          .with_system(string_button_clicked.system())
+          .with_system(update_string_settings.system()),
       )
+      .add_system_set(SystemSet::on_exit(AppState::Settings).with_system(destroy_settings.system()))
+      .add_system_set(SystemSet::on_pause(AppState::Settings).with_system(hide_ui.system()))
       .add_system_set(
-        SystemSet::on_exit(AppState::Settings).with_system(destroy_settings.system()),
+        SystemSet::on_resume(AppState::Settings)
+          .with_system(resume_ui.system())
+          .with_system(resume_settings.system()),
       );
   }
 }

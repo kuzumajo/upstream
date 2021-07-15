@@ -208,12 +208,6 @@ fn hide_ui(mut query: Query<&mut Style, With<LoadGameUI>>) {
   }
 }
 
-fn hide_text(mut query: Query<&mut Visible, With<Text>>) {
-  for mut visible in query.iter_mut() {
-    visible.is_visible = false;
-  }
-}
-
 fn resume_game(
   mut commands: Commands,
   text: Option<Res<TextInputText>>,
@@ -228,12 +222,6 @@ fn resume_game(
 fn resume_ui(mut query: Query<&mut Style, With<LoadGameUI>>) {
   for mut style in query.iter_mut() {
     style.display = Display::default();
-  }
-}
-
-fn resume_text(mut query: Query<&mut Visible, With<Text>>) {
-  for mut visible in query.iter_mut() {
-    visible.is_visible = true;
   }
 }
 
@@ -258,16 +246,11 @@ impl Plugin for LoadGamePlugin {
       .add_system_set(
         SystemSet::on_exit(AppState::LoadGame).with_system(destroy_load_game.system()),
       )
-      .add_system_set(
-        SystemSet::on_pause(AppState::LoadGame)
-          .with_system(hide_ui.system())
-          .with_system(hide_text.system()),
-      )
+      .add_system_set(SystemSet::on_pause(AppState::LoadGame).with_system(hide_ui.system()))
       .add_system_set(
         SystemSet::on_resume(AppState::LoadGame)
           .with_system(resume_game.system().label("check"))
-          .with_system(resume_ui.system().after("check"))
-          .with_system(resume_text.system().after("check")),
+          .with_system(resume_ui.system().after("check")),
       );
   }
 }

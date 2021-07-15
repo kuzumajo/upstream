@@ -8,7 +8,11 @@ struct TextInputTextUI;
 
 pub struct TextInputText(pub String);
 
-fn setup_text_input(mut commands: Commands, font_assets: Res<FontAssets>) {
+fn setup_text_input(
+  mut commands: Commands,
+  font_assets: Res<FontAssets>,
+  option: Option<Res<TextInputText>>,
+) {
   commands
     .spawn_bundle(Text2dBundle {
       text: Text::with_section(
@@ -46,7 +50,9 @@ fn setup_text_input(mut commands: Commands, font_assets: Res<FontAssets>) {
     })
     .insert(TextInputTextUI)
     .insert(TextInputUI);
-  commands.insert_resource(TextInputText("".to_string()));
+  if option.is_none() {
+    commands.insert_resource(TextInputText("".to_string()));
+  }
 }
 
 fn input_text(

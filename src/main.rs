@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::pass::ClearColor};
+use bevy::{prelude::*, render::pass::ClearColor, render::RenderSystem};
 
 mod config;
 mod consts;
@@ -40,6 +40,17 @@ impl FromWorld for FontAssets {
   }
 }
 
+/// @see https://github.com/bevyengine/bevy/issues/1135
+fn issue_1135_system(mut query: Query<(&Node, &mut Visible), With<Text>>) {
+  for (node, mut visible) in query.iter_mut() {
+    if node.size == Vec2::ZERO {
+      visible.is_visible = false;
+    } else {
+      visible.is_visible = true;
+    }
+  }
+}
+
 fn main() {
   let game_config = GameConfig::load();
 
@@ -47,6 +58,11 @@ fn main() {
     .insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.9)))
     .insert_resource(game_config.get_window_descriptor())
     .insert_resource(game_config)
+    .add_system(
+      issue_1135_system
+        .system()
+        .before(RenderSystem::VisibleEntities),
+    )
     .add_plugins(DefaultPlugins)
     .init_resource::<FontAssets>()
     .add_plugin(StudioLogoPlugin)

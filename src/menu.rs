@@ -150,21 +150,9 @@ fn hide_ui(mut query: Query<&mut Style, With<GameMenuUI>>) {
   }
 }
 
-fn hide_text(mut query: Query<&mut Visible, With<Text>>) {
-  for mut visible in query.iter_mut() {
-    visible.is_visible = false;
-  }
-}
-
 fn resume_ui(mut query: Query<&mut Style, With<GameMenuUI>>) {
   for mut style in query.iter_mut() {
     style.display = Display::default();
-  }
-}
-
-fn resume_text(mut query: Query<&mut Visible, With<Text>>) {
-  for mut visible in query.iter_mut() {
-    visible.is_visible = true;
   }
 }
 
@@ -187,15 +175,7 @@ impl Plugin for GameMenuPlugin {
           .with_system(button_click.system()),
       )
       .add_system_set(SystemSet::on_exit(AppState::Menu).with_system(destroy_menu.system()))
-      .add_system_set(
-        SystemSet::on_pause(AppState::Menu)
-          .with_system(hide_ui.system())
-          .with_system(hide_text.system()),
-      )
-      .add_system_set(
-        SystemSet::on_resume(AppState::Menu)
-          .with_system(resume_ui.system())
-          .with_system(resume_text.system()),
-      );
+      .add_system_set(SystemSet::on_pause(AppState::Menu).with_system(hide_ui.system()))
+      .add_system_set(SystemSet::on_resume(AppState::Menu).with_system(resume_ui.system()));
   }
 }
