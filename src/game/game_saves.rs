@@ -10,7 +10,10 @@ fn enter_game(mut commands: Commands, save: Res<GameSave>, slot: Option<Res<Game
   if let Some(slot) = slot {
     save.save(slot.0).expect("failed to save!");
     info!("Game saved to slot {}", slot.0);
-    commands.insert_resource(GameAutoSaveTimer(Timer::from_seconds(10.0, true)));
+    commands.insert_resource(GameAutoSaveTimer(Timer::from_seconds(
+      GAME_AUTOSAVE_INTERVAL,
+      true,
+    )));
   }
 }
 

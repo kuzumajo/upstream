@@ -21,7 +21,7 @@ struct SettingsMaterials {
 
   slide_button: Handle<ColorMaterial>,
   slide_bar: Handle<ColorMaterial>,
-  
+
   nav_bar_background: Handle<ColorMaterial>,
 
   transparent: Handle<ColorMaterial>,
@@ -376,26 +376,28 @@ fn setup_settings(
                       });
                     }
                     Select(selected, list) => {
-                      parent.spawn_bundle(ButtonBundle {
-                        material: materials.transparent.clone(),
-                        ..Default::default()
-                      }).with_children(|parent| {
-                        parent.spawn_bundle(TextBundle {
-                          text: Text::with_section(
-                            list[*selected as usize].clone(),
-                            TextStyle {
-                              font: font_assets.default_font.clone(),
-                              font_size: 32.0,
-                              color: Color::BLACK,
-                            },
-                            Default::default(),
-                          ),
+                      parent
+                        .spawn_bundle(ButtonBundle {
+                          material: materials.transparent.clone(),
                           ..Default::default()
-                        });
-                      })
-                      .insert(st)
-                      .insert(item)
-                      .insert(SettingSelectButton);
+                        })
+                        .with_children(|parent| {
+                          parent.spawn_bundle(TextBundle {
+                            text: Text::with_section(
+                              list[*selected as usize].clone(),
+                              TextStyle {
+                                font: font_assets.default_font.clone(),
+                                font_size: 32.0,
+                                color: Color::BLACK,
+                              },
+                              Default::default(),
+                            ),
+                            ..Default::default()
+                          });
+                        })
+                        .insert(st)
+                        .insert(item)
+                        .insert(SettingSelectButton);
                     }
                   });
               }
@@ -425,7 +427,10 @@ fn nav_button_clicked(
   mut state: ResMut<State<AppState>>,
   mut config: ResMut<GameConfig>,
   query: Query<(&Interaction, &SettingsNavButton), (Changed<Interaction>, With<SettingsButtonUI>)>,
-  mut query_set: QuerySet<(Query<(&SettingItem, &SettingType)>, Query<(&SettingItem, &mut SettingType)>)>,
+  mut query_set: QuerySet<(
+    Query<(&SettingItem, &SettingType)>,
+    Query<(&SettingItem, &mut SettingType)>,
+  )>,
 ) {
   for (interaction, button) in query.iter() {
     match *interaction {
@@ -437,7 +442,9 @@ fn nav_button_clicked(
           for (item, stype) in query_set.q0().iter() {
             config.apply_changes(item, stype);
           }
-          config.save().expect("failed to save display config to disk");
+          config
+            .save()
+            .expect("failed to save display config to disk");
           commands.insert_resource(config.get_window_descriptor());
         }
         SettingsNavButton::Reset => {
@@ -533,7 +540,10 @@ fn update_radio_material(
 }
 
 fn select_button_clicked(
-  mut query: Query<(&Interaction, &mut SettingType), (Changed<Interaction>, With<SettingSelectButton>)>,
+  mut query: Query<
+    (&Interaction, &mut SettingType),
+    (Changed<Interaction>, With<SettingSelectButton>),
+  >,
 ) {
   for (interaction, mut stype) in query.iter_mut() {
     if let SettingType::Select(choice, list) = &*stype {
@@ -541,7 +551,7 @@ fn select_button_clicked(
         Interaction::Clicked => {
           *stype = SettingType::Select((choice + 1) % list.len(), list.clone());
         }
-        _ => { }
+        _ => {}
       }
     }
   }
@@ -628,10 +638,10 @@ impl Plugin for SettingsPlugin {
           .with_system(button_material_change.system())
           .with_system(nav_button_clicked.system())
           .with_system(string_button_clicked.system().label("renew"))
-          .with_system(update_string_settings.system().after("renew"))
           .with_system(radio_button_clicked.system().label("renew"))
-          .with_system(update_radio_material.system().after("renew"))
           .with_system(select_button_clicked.system().label("renew"))
+          .with_system(update_string_settings.system().after("renew"))
+          .with_system(update_radio_material.system().after("renew"))
           .with_system(update_select_button.system().after("renew")),
       )
       .add_system_set(SystemSet::on_exit(AppState::Settings).with_system(destroy_settings.system()))
