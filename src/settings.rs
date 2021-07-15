@@ -54,7 +54,7 @@ impl FromWorld for SettingsMaterials {
       slide_button: materials.add(asset_server.load("images/slidebutton.png").into()),
       slide_bar: materials.add(asset_server.load("images/slidebar.png").into()),
 
-      transparent: materials.add(Color::YELLOW.into()),
+      transparent: materials.add(Color::NONE.into()),
     }
   }
 }
@@ -201,7 +201,7 @@ fn setup_settings(
             justify_content: JustifyContent::SpaceBetween,
             ..Default::default()
           },
-          material: materials.radio_check_normal.clone(),
+          material: materials.transparent.clone(),
           ..Default::default()
         })
         .with_children(|parent| {
@@ -328,7 +328,7 @@ fn setup_settings(
                         .insert(SettingStringButton);
                     }
                     Ratio(value) => {
-                      parent.spawn_bundle(NodeBundle {
+                      parent.spawn_bundle(ButtonBundle {
                         style: Style {
                           size: Size::new(Val::Px(25.0), Val::Px(25.0)),
                           ..Default::default()
@@ -339,7 +339,7 @@ fn setup_settings(
                           materials.radio_uncheck_normal.clone()
                         },
                         ..Default::default()
-                      });
+                      }).insert(st).insert(SettingRadioButton);
                     }
                     Slide(value) => {
                       parent.spawn_bundle(NodeBundle {
@@ -447,6 +447,57 @@ fn string_button_clicked(
   }
 }
 
+fn radio_button_clicked(
+  mut query: Query<(&Interaction, &mut SettingType), (Changed<Interaction>, With<SettingRadioButton>)>,
+) {
+  for (interaction, mut stype) in query.iter_mut() {
+    match *interaction {
+      Interaction::Clicked => {
+        if let SettingType::Ratio(checked) = *stype {
+          *stype = SettingType::Ratio(!checked);
+        }
+      }
+      _ => {}
+    }
+  }
+}
+
+fn update_radio_material(
+  mut query: Query<
+    (&Interaction, &SettingType, &mut Handle<ColorMaterial>),
+    (Or<(Changed<Interaction>, Changed<SettingType>)>, With<SettingRadioButton>)
+  >,
+  materials: Res<SettingsMaterials>,
+) {
+  for (interaction, stype, mut material) in query.iter_mut() {
+    if let SettingType::Ratio(checked) = &stype {
+      *material = match *interaction {
+        Interaction::Clicked => {
+          if *checked {
+            materials.radio_check_pressed.clone()
+          } else {
+            materials.radio_uncheck_pressed.clone()
+          }
+        }
+        Interaction::Hovered => {
+          if *checked {
+            materials.radio_check_hover.clone()
+          } else {
+            materials.radio_uncheck_hover.clone()
+          }
+        }
+        Interaction::None => {
+          if *checked {
+            materials.radio_check_normal.clone()
+          } else {
+            materials.radio_uncheck_normal.clone()
+          }
+        }
+      }
+    }
+  }
+}
+
 fn resume_settings(
   mut commands: Commands,
   reason: Option<Res<SettingsInputTextReason>>,
@@ -513,7 +564,9 @@ impl Plugin for SettingsPlugin {
           .with_system(button_material_change.system())
           .with_system(nav_button_clicked.system())
           .with_system(string_button_clicked.system())
-          .with_system(update_string_settings.system()),
+          .with_system(update_string_settings.system())
+          .with_system(radio_button_clicked.system().label("renew"))
+          .with_system(update_radio_material.system().after("renew")),
       )
       .add_system_set(SystemSet::on_exit(AppState::Settings).with_system(destroy_settings.system()))
       .add_system_set(SystemSet::on_pause(AppState::Settings).with_system(hide_ui.system()))

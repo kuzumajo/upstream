@@ -58,11 +58,7 @@ fn main() {
     .insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.9)))
     .insert_resource(game_config.get_window_descriptor())
     .insert_resource(game_config)
-    .add_system(
-      issue_1135_system
-        .system()
-        .before(RenderSystem::VisibleEntities),
-    )
+    .add_system(issue_1135_system.system())
     .add_plugins(DefaultPlugins)
     .init_resource::<FontAssets>()
     .add_plugin(StudioLogoPlugin)
