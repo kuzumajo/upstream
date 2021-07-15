@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::pass::ClearColor, render::RenderSystem};
+use bevy::{prelude::*, render::pass::ClearColor};
 
 mod config;
 mod consts;

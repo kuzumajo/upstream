@@ -52,14 +52,14 @@ impl Default for KeyBindings {
 /// Game config
 #[derive(Serialize, Deserialize)]
 pub struct GameConfig {
-  volumn: f32,
-  volumn_music: f32,
-  volumn_sfx: f32,
-  volumn_voice: f32,
+  volume: f32,
+  volume_music: f32,
+  volume_sfx: f32,
+  volume_voice: f32,
   save_location: String,
 
   fullscreen: bool,
-  resolution: u32,
+  resolution: usize,
   decorations: bool,
 
   attack_to_mouse: bool,
@@ -79,10 +79,10 @@ impl Default for GameConfig {
       .to_string();
 
     GameConfig {
-      volumn: 1.0,
-      volumn_music: 1.0,
-      volumn_sfx: 1.0,
-      volumn_voice: 1.0,
+      volume: 1.0,
+      volume_music: 1.0,
+      volume_sfx: 1.0,
+      volume_voice: 1.0,
       save_location: save_dir,
 
       fullscreen: false,
@@ -107,12 +107,15 @@ impl GameConfig {
         return config;
       }
     }
+    warn!("failed to read display config from disk, use the default config");
     GameConfig::default()
   }
 
   /// save to disk
   pub fn save(&self) -> std::io::Result<()> {
-    write(GameConfig::CONFIG_FILE, toml::to_vec(self).unwrap())
+    write(GameConfig::CONFIG_FILE, toml::to_vec(self).unwrap())?;
+    info!("display config saved to {}", GameConfig::CONFIG_FILE);
+    Ok(())
   }
 }
 
@@ -141,10 +144,10 @@ impl GameConfig {
     use SettingItem::*;
     use SettingType::*;
     match *item {
-      Volumn =>           Slide(self.volumn),
-      VolumnMusic =>      Slide(self.volumn_music),
-      VolumnSfx =>        Slide(self.volumn_sfx),
-      VolumnVoice =>      Slide(self.volumn_voice),
+      Volume =>           Slide(self.volume),
+      VolumeMusic =>      Slide(self.volume_music),
+      VolumeSfx =>        Slide(self.volume_sfx),
+      VolumeVoice =>      Slide(self.volume_voice),
       SaveDir =>          String(self.save_location.clone()),
       Fullscreen =>       Ratio(self.fullscreen),
       Resolution =>       Select(self.resolution, RESOLUTION_LIST.iter().map(|(w, h)| format!("{}x{}", w, h)).collect()),
@@ -160,10 +163,10 @@ impl GameConfig {
     use SettingItem::*;
     use SettingType::*;
     match *sitem {
-      Volumn           => if let Slide(value) = *stype     { self.volumn = value;                },
-      VolumnMusic      => if let Slide(value) = *stype     { self.volumn_music = value;          },
-      VolumnSfx        => if let Slide(value) = *stype     { self.volumn_sfx = value;            },
-      VolumnVoice      => if let Slide(value) = *stype     { self.volumn_voice = value;          },
+      Volume           => if let Slide(value) = *stype     { self.volume = value;                },
+      VolumeMusic      => if let Slide(value) = *stype     { self.volume_music = value;          },
+      VolumeSfx        => if let Slide(value) = *stype     { self.volume_sfx = value;            },
+      VolumeVoice      => if let Slide(value) = *stype     { self.volume_voice = value;          },
       SaveDir          => if let String(value) = &*stype   { self.save_location = value.clone(); },
       Fullscreen       => if let Ratio(value) = *stype     { self.fullscreen = value;            },
       Resolution       => if let Select(value, _) = *stype { self.resolution = value;            },

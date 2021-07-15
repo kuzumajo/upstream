@@ -1,4 +1,5 @@
 # TODO list
 
 - [ ] **encrypt game savings**, `ring` is hard to understand how to use.
+- [ ] **auto restart after settings changed**
 

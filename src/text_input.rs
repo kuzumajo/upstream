@@ -56,7 +56,6 @@ fn setup_text_input(
 }
 
 fn input_text(
-  mut commands: Commands,
   mut text: ResMut<TextInputText>,
   mut char_input_events: EventReader<ReceivedCharacter>,
   mut state: ResMut<State<AppState>>,

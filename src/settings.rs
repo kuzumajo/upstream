@@ -21,6 +21,8 @@ struct SettingsMaterials {
 
   slide_button: Handle<ColorMaterial>,
   slide_bar: Handle<ColorMaterial>,
+  
+  nav_bar_background: Handle<ColorMaterial>,
 
   transparent: Handle<ColorMaterial>,
 }
@@ -39,9 +41,9 @@ impl FromWorld for SettingsMaterials {
     let asset_server = world_cell.get_resource::<AssetServer>().unwrap();
 
     SettingsMaterials {
-      button_pressed: materials.add(Color::BLUE.into()),
-      button_normal: materials.add(Color::GREEN.into()),
-      button_hover: materials.add(Color::RED.into()),
+      button_pressed: materials.add(Color::rgb(0.75, 0.75, 0.75).into()),
+      button_normal: materials.add(Color::rgb(0.85, 0.85, 0.85).into()),
+      button_hover: materials.add(Color::rgb(0.8, 0.8, 0.8).into()),
 
       radio_check_pressed: materials.add(Color::BLUE.into()),
       radio_check_normal: materials.add(Color::GREEN.into()),
@@ -53,6 +55,8 @@ impl FromWorld for SettingsMaterials {
 
       slide_button: materials.add(asset_server.load("images/slidebutton.png").into()),
       slide_bar: materials.add(asset_server.load("images/slidebar.png").into()),
+
+      nav_bar_background: materials.add(Color::rgb(0.95, 0.95, 0.95).into()),
 
       transparent: materials.add(Color::NONE.into()),
     }
@@ -67,14 +71,15 @@ pub enum SettingType {
   Slide(f32),
   /// (selected, total)
   /// 0 <= selected < total
-  Select(u32, Vec<String>),
+  Select(usize, Vec<String>),
 }
 
+#[derive(Clone)]
 pub enum SettingItem {
-  Volumn,
-  VolumnMusic,
-  VolumnSfx,
-  VolumnVoice,
+  Volume,
+  VolumeMusic,
+  VolumeSfx,
+  VolumeVoice,
   SaveDir,
   Fullscreen,
   Resolution,
@@ -84,7 +89,7 @@ pub enum SettingItem {
   MouseSensitivity,
 }
 
-enum SettingsButton {
+enum SettingsNavButton {
   Back,
   Apply,
   Reset,
@@ -117,7 +122,7 @@ fn setup_settings(
             align_items: AlignItems::Center,
             ..Default::default()
           },
-          material: materials.radio_check_hover.clone(),
+          material: materials.nav_bar_background.clone(),
           ..Default::default()
         })
         .with_children(|parent| {
@@ -151,11 +156,11 @@ fn setup_settings(
             })
             .with_children(|parent| {
               parent.spawn_bundle(TextBundle {
-                text: Text::with_section("<", text_style.clone(), text_alignment.clone()),
+                text: Text::with_section("戻る", text_style.clone(), text_alignment.clone()),
                 ..Default::default()
               });
             })
-            .insert(SettingsButton::Back)
+            .insert(SettingsNavButton::Back)
             .insert(SettingsButtonUI);
 
           // apply button
@@ -167,11 +172,11 @@ fn setup_settings(
             })
             .with_children(|parent| {
               parent.spawn_bundle(TextBundle {
-                text: Text::with_section("Apply", text_style.clone(), text_alignment.clone()),
+                text: Text::with_section("適用", text_style.clone(), text_alignment.clone()),
                 ..Default::default()
               });
             })
-            .insert(SettingsButton::Apply)
+            .insert(SettingsNavButton::Apply)
             .insert(SettingsButtonUI);
 
           // reset button
@@ -183,11 +188,11 @@ fn setup_settings(
             })
             .with_children(|parent| {
               parent.spawn_bundle(TextBundle {
-                text: Text::with_section("Reset", text_style.clone(), text_alignment.clone()),
+                text: Text::with_section("リセット", text_style.clone(), text_alignment.clone()),
                 ..Default::default()
               });
             })
-            .insert(SettingsButton::Reset)
+            .insert(SettingsNavButton::Reset)
             .insert(SettingsButtonUI);
         });
 
@@ -208,17 +213,17 @@ fn setup_settings(
           use SettingItem::*;
           use SettingType::*;
           let setting_list = [
-            ("声", Volumn),
-            ("乐声", VolumnMusic),
-            ("效声", VolumnSfx),
-            ("音声", VolumnVoice),
-            ("存址", SaveDir),
-            ("全屏", Fullscreen),
+            ("ボリューム", Volume),
+            ("音楽", VolumeMusic),
+            ("効果音", VolumeSfx),
+            ("声", VolumeVoice),
+            ("保存先", SaveDir),
+            ("フルスクリーン", Fullscreen),
             ("解像度", Resolution),
-            ("窗框", Decorations),
-            ("攻于鼠", AttackToMouse),
-            ("冲于鼠", AssaultToMouse),
-            ("鼠敏", MouseSensitivity),
+            ("装飾", Decorations),
+            ("マウスの方向に攻撃", AttackToMouse),
+            ("マウスの方向に突撃", AssaultToMouse),
+            ("マウス感度", MouseSensitivity),
           ];
 
           // left name
@@ -283,8 +288,8 @@ fn setup_settings(
             })
             .with_children(|parent| {
               // right controllers
-              for (_, item) in setting_list.iter() {
-                let st = config.get_settings_type(item);
+              for (_, item) in setting_list.iter().cloned() {
+                let st = config.get_settings_type(&item);
 
                 parent
                   .spawn_bundle(NodeBundle {
@@ -325,6 +330,7 @@ fn setup_settings(
                           });
                         })
                         .insert(st)
+                        .insert(item)
                         .insert(SettingStringButton);
                     }
                     Ratio(value) => {
@@ -342,6 +348,7 @@ fn setup_settings(
                           ..Default::default()
                         })
                         .insert(st)
+                        .insert(item)
                         .insert(SettingRadioButton);
                     }
                     Slide(value) => {
@@ -369,18 +376,26 @@ fn setup_settings(
                       });
                     }
                     Select(selected, list) => {
-                      parent.spawn_bundle(TextBundle {
-                        text: Text::with_section(
-                          list[*selected as usize].clone(),
-                          TextStyle {
-                            font: font_assets.default_font.clone(),
-                            font_size: 32.0,
-                            color: Color::BLACK,
-                          },
-                          Default::default(),
-                        ),
+                      parent.spawn_bundle(ButtonBundle {
+                        material: materials.transparent.clone(),
                         ..Default::default()
-                      });
+                      }).with_children(|parent| {
+                        parent.spawn_bundle(TextBundle {
+                          text: Text::with_section(
+                            list[*selected as usize].clone(),
+                            TextStyle {
+                              font: font_assets.default_font.clone(),
+                              font_size: 32.0,
+                              color: Color::BLACK,
+                            },
+                            Default::default(),
+                          ),
+                          ..Default::default()
+                        });
+                      })
+                      .insert(st)
+                      .insert(item)
+                      .insert(SettingSelectButton);
                     }
                   });
               }
@@ -406,20 +421,29 @@ fn button_material_change(
 }
 
 fn nav_button_clicked(
+  mut commands: Commands,
   mut state: ResMut<State<AppState>>,
-  query: Query<(&Interaction, &SettingsButton), (Changed<Interaction>, With<SettingsButtonUI>)>,
+  mut config: ResMut<GameConfig>,
+  query: Query<(&Interaction, &SettingsNavButton), (Changed<Interaction>, With<SettingsButtonUI>)>,
+  mut query_set: QuerySet<(Query<(&SettingItem, &SettingType)>, Query<(&SettingItem, &mut SettingType)>)>,
 ) {
   for (interaction, button) in query.iter() {
     match *interaction {
       Interaction::Clicked => match *button {
-        SettingsButton::Back => {
+        SettingsNavButton::Back => {
           state.pop().unwrap();
         }
-        SettingsButton::Apply => {
-          println!("apply!!");
+        SettingsNavButton::Apply => {
+          for (item, stype) in query_set.q0().iter() {
+            config.apply_changes(item, stype);
+          }
+          config.save().expect("failed to save display config to disk");
+          commands.insert_resource(config.get_window_descriptor());
         }
-        SettingsButton::Reset => {
-          println!("reset!!");
+        SettingsNavButton::Reset => {
+          for (item, mut stype) in query_set.q1_mut().iter_mut() {
+            *stype = config.get_settings_type(item);
+          }
         }
       },
       _ => {}
@@ -508,6 +532,36 @@ fn update_radio_material(
   }
 }
 
+fn select_button_clicked(
+  mut query: Query<(&Interaction, &mut SettingType), (Changed<Interaction>, With<SettingSelectButton>)>,
+) {
+  for (interaction, mut stype) in query.iter_mut() {
+    if let SettingType::Select(choice, list) = &*stype {
+      match *interaction {
+        Interaction::Clicked => {
+          *stype = SettingType::Select((choice + 1) % list.len(), list.clone());
+        }
+        _ => { }
+      }
+    }
+  }
+}
+
+fn update_select_button(
+  query: Query<(&SettingType, &Children), (Changed<SettingType>, With<SettingSelectButton>)>,
+  mut text_query: Query<&mut Text>,
+) {
+  for (stype, children) in query.iter() {
+    if let SettingType::Select(choice, list) = stype {
+      for child in children.iter() {
+        if let Ok(mut text) = text_query.get_mut(*child) {
+          text.sections[0].value = list[*choice].clone();
+        }
+      }
+    }
+  }
+}
+
 fn resume_settings(
   mut commands: Commands,
   reason: Option<Res<SettingsInputTextReason>>,
@@ -573,10 +627,12 @@ impl Plugin for SettingsPlugin {
         SystemSet::on_update(AppState::Settings)
           .with_system(button_material_change.system())
           .with_system(nav_button_clicked.system())
-          .with_system(string_button_clicked.system())
-          .with_system(update_string_settings.system())
+          .with_system(string_button_clicked.system().label("renew"))
+          .with_system(update_string_settings.system().after("renew"))
           .with_system(radio_button_clicked.system().label("renew"))
-          .with_system(update_radio_material.system().after("renew")),
+          .with_system(update_radio_material.system().after("renew"))
+          .with_system(select_button_clicked.system().label("renew"))
+          .with_system(update_select_button.system().after("renew")),
       )
       .add_system_set(SystemSet::on_exit(AppState::Settings).with_system(destroy_settings.system()))
       .add_system_set(SystemSet::on_pause(AppState::Settings).with_system(hide_ui.system()))
