@@ -3,6 +3,7 @@ use crate::game::GameAutoSaveSlot;
 use crate::saves::GameSave;
 use crate::text_input::TextInputText;
 use crate::FontAssets;
+use crate::crypto::Crypto;
 use bevy::prelude::*;
 
 struct LoadGameUI;
@@ -94,6 +95,7 @@ fn setup_load_game(
   mut commands: Commands,
   font_assets: Res<FontAssets>,
   materials: Res<LoadGameMaterials>,
+  crypto: Res<Crypto>,
 ) {
   commands
     .spawn_bundle(NodeBundle {
@@ -123,13 +125,13 @@ fn setup_load_game(
         .with_children(|parent| {
           make_save_slot(
             parent,
-            GameSaveSlot(GameSave::load(0), 0),
+            GameSaveSlot(GameSave::load(&crypto, 0), 0),
             &materials,
             &font_assets,
           );
           make_save_slot(
             parent,
-            GameSaveSlot(GameSave::load(2), 2),
+            GameSaveSlot(GameSave::load(&crypto, 2), 2),
             &materials,
             &font_assets,
           );
@@ -149,13 +151,13 @@ fn setup_load_game(
         .with_children(|parent| {
           make_save_slot(
             parent,
-            GameSaveSlot(GameSave::load(1), 1),
+            GameSaveSlot(GameSave::load(&crypto, 1), 1),
             &materials,
             &font_assets,
           );
           make_save_slot(
             parent,
-            GameSaveSlot(GameSave::load(3), 3),
+            GameSaveSlot(GameSave::load(&crypto, 3), 3),
             &materials,
             &font_assets,
           );

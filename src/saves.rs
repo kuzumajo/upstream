@@ -1,13 +1,16 @@
 use bincode::deserialize;
 use home::home_dir;
+use bevy::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use std::fs::create_dir_all;
+use std::fs::remove_file;
 use std::fs::read;
 use std::fs::write;
 use std::path::PathBuf;
 use std::time::Duration;
 use std::time::SystemTime;
+use crate::crypto::Crypto;
 
 /// Game Data
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -54,26 +57,36 @@ impl GameSave {
     }
   }
 
-  pub fn load(slot: u8) -> Option<Self> {
+  pub fn load(crypto: &Crypto, slot: u8) -> Option<Self> {
     let save_dir = get_save_dir().unwrap();
     let save_path = save_dir.join(format!("save{}.dat", slot));
-    if let Ok(data) = read(save_path) {
-      if let Ok(save) = deserialize::<GameSave>(&data[..]) {
-        return Some(save);
+    if let Ok(data) = read(&save_path) {
+      if let Ok(data) = crypto.decrypt(&data) {
+        if let Ok(save) = deserialize::<GameSave>(&data) {
+          return Some(save);
+        }
+      }
+      warn!("save {} broken, trying to delete it", slot);
+      if remove_file(&save_path).is_ok() {
+        warn!("removed {:?}", save_path);
+      } else {
+        warn!("unable to remove {:?}", save_path);
       }
     }
     return None;
   }
 
-  pub fn save(&self, slot: u8) -> std::io::Result<()> {
+  pub fn save(&self, crypto: &Crypto, slot: u8) -> std::io::Result<()> {
     if slot >= 4 {
-      panic!("illegal slot: {}", slot);
+      warn!("illegal slot: {}", slot);
     }
     let save_dir = get_save_dir().unwrap();
     create_dir_all(&save_dir)?;
     let filename = save_dir.join(format!("save{}.dat", slot));
     let data = bincode::serialize(self).unwrap();
-    write(filename, data)?;
+    let data = crypto.encrypt(&data);
+    write(filename, &data)?;
+    info!("game saved slot {}", slot);
     Ok(())
   }
 }

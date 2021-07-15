@@ -1,3 +1,5 @@
+#[macro_use] extern crate magic_crypt;
+
 use bevy::{prelude::*, render::pass::ClearColor};
 
 mod config;
@@ -10,6 +12,7 @@ mod saves;
 mod settings;
 mod staff;
 mod text_input;
+mod crypto;
 
 use crate::config::GameConfig;
 use crate::consts::*;
@@ -20,6 +23,7 @@ use crate::menu::GameMenuPlugin;
 use crate::settings::SettingsPlugin;
 use crate::staff::StaffPlugin;
 use crate::text_input::TextInputPlugin;
+use crate::crypto::Crypto;
 
 fn insert_camera(mut commands: Commands) {
   commands.spawn_bundle(OrthographicCameraBundle::new_2d());
@@ -58,6 +62,7 @@ fn main() {
     .insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.9)))
     .insert_resource(game_config.get_window_descriptor())
     .insert_resource(game_config)
+    .insert_resource(Crypto::new(CRYPTO_KEY))
     .add_system(issue_1135_system.system())
     .add_plugins(DefaultPlugins)
     .init_resource::<FontAssets>()

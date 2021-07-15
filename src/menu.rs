@@ -52,11 +52,11 @@ fn setup_menu(mut commands: Commands, materials: Res<MenuMaterials>, font_assets
     .insert(GameMenuUI)
     .with_children(|parent| {
       vec![
-        (MenuButton::Start, "start"),
-        (MenuButton::Settings, "settings"),
-        (MenuButton::Achievements, "achievements"),
-        (MenuButton::Staff, "staff"),
-        (MenuButton::Exit, "exit"),
+        (MenuButton::Start, "始める"),
+        (MenuButton::Settings, "設定"),
+        (MenuButton::Achievements, "成就"),
+        (MenuButton::Staff, "スタッフ"),
+        (MenuButton::Exit, "終了"),
       ]
       .into_iter()
       .for_each(|(button, title)| {

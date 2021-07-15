@@ -41,17 +41,17 @@ impl FromWorld for SettingsMaterials {
     let asset_server = world_cell.get_resource::<AssetServer>().unwrap();
 
     SettingsMaterials {
-      button_pressed: materials.add(Color::rgb(0.75, 0.75, 0.75).into()),
-      button_normal: materials.add(Color::rgb(0.85, 0.85, 0.85).into()),
-      button_hover: materials.add(Color::rgb(0.8, 0.8, 0.8).into()),
+      button_pressed: materials.add(Color::rgb(0.8, 0.8, 0.8).into()),
+      button_normal: materials.add(Color::rgb(0.9, 0.9, 0.9).into()),
+      button_hover: materials.add(Color::rgb(0.85, 0.85, 0.85).into()),
 
-      radio_check_pressed: materials.add(Color::BLUE.into()),
-      radio_check_normal: materials.add(Color::GREEN.into()),
-      radio_check_hover: materials.add(Color::RED.into()),
+      radio_check_pressed: materials.add(Color::rgb(0.18, 0.8, 0.27).into()),
+      radio_check_normal: materials.add(Color::rgb(0.24, 0.99, 0.34).into()),
+      radio_check_hover: materials.add(Color::rgb(0.22, 0.90, 0.31).into()),
 
-      radio_uncheck_pressed: materials.add(Color::BLUE.into()),
-      radio_uncheck_normal: materials.add(Color::RED.into()),
-      radio_uncheck_hover: materials.add(Color::GREEN.into()),
+      radio_uncheck_pressed: materials.add(Color::rgb(0.71, 0.18, 0.18).into()),
+      radio_uncheck_normal: materials.add(Color::rgb(1.0, 0.25, 0.25).into()),
+      radio_uncheck_hover: materials.add(Color::rgb(0.84, 0.22, 0.22).into()),
 
       slide_button: materials.add(asset_server.load("images/slidebutton.png").into()),
       slide_bar: materials.add(asset_server.load("images/slidebar.png").into()),

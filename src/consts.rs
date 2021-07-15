@@ -35,4 +35,9 @@ pub const RESOLUTION_LIST: [(u32, u32); 2] = [(1280, 720), (1920, 1080)];
 // game
 pub const GAME_AUTOSAVE_INTERVAL: f32 = 60.0;
 
+// crypto
+
+/// Crypto key, but maybe change after release
+pub const CRYPTO_KEY: &str = "flag{dHrkWcgkdohUvl4IywOGpPhlHz}";
+
 pub const PLAYER_NAME: &str = "蓿";

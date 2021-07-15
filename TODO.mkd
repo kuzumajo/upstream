@@ -1,5 +1,5 @@
 # TODO list
 
-- [ ] **encrypt game savings**, `ring` is hard to understand how to use.
+- [x] **encrypt game savings**, ~~`ring` is hard to understand how to use~~, `magic_crypt` is f**king awesome.
 - [ ] **auto restart after settings changed**
 
