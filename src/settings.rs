@@ -328,18 +328,21 @@ fn setup_settings(
                         .insert(SettingStringButton);
                     }
                     Ratio(value) => {
-                      parent.spawn_bundle(ButtonBundle {
-                        style: Style {
-                          size: Size::new(Val::Px(25.0), Val::Px(25.0)),
+                      parent
+                        .spawn_bundle(ButtonBundle {
+                          style: Style {
+                            size: Size::new(Val::Px(25.0), Val::Px(25.0)),
+                            ..Default::default()
+                          },
+                          material: if *value {
+                            materials.radio_check_normal.clone()
+                          } else {
+                            materials.radio_uncheck_normal.clone()
+                          },
                           ..Default::default()
-                        },
-                        material: if *value {
-                          materials.radio_check_normal.clone()
-                        } else {
-                          materials.radio_uncheck_normal.clone()
-                        },
-                        ..Default::default()
-                      }).insert(st).insert(SettingRadioButton);
+                        })
+                        .insert(st)
+                        .insert(SettingRadioButton);
                     }
                     Slide(value) => {
                       parent.spawn_bundle(NodeBundle {
@@ -448,7 +451,10 @@ fn string_button_clicked(
 }
 
 fn radio_button_clicked(
-  mut query: Query<(&Interaction, &mut SettingType), (Changed<Interaction>, With<SettingRadioButton>)>,
+  mut query: Query<
+    (&Interaction, &mut SettingType),
+    (Changed<Interaction>, With<SettingRadioButton>),
+  >,
 ) {
   for (interaction, mut stype) in query.iter_mut() {
     match *interaction {
@@ -465,7 +471,10 @@ fn radio_button_clicked(
 fn update_radio_material(
   mut query: Query<
     (&Interaction, &SettingType, &mut Handle<ColorMaterial>),
-    (Or<(Changed<Interaction>, Changed<SettingType>)>, With<SettingRadioButton>)
+    (
+      Or<(Changed<Interaction>, Changed<SettingType>)>,
+      With<SettingRadioButton>,
+    ),
   >,
   materials: Res<SettingsMaterials>,
 ) {
@@ -486,6 +495,7 @@ fn update_radio_material(
             materials.radio_uncheck_hover.clone()
           }
         }
+
         Interaction::None => {
           if *checked {
             materials.radio_check_normal.clone()
