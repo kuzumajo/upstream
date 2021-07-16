@@ -2,7 +2,9 @@ use crate::config::GameConfig;
 use crate::consts::*;
 use crate::text_input::TextInputText;
 use crate::FontAssets;
+use crate::MousePosition;
 use bevy::prelude::*;
+use bevy::ui::FocusPolicy;
 
 struct SettingsUI;
 struct SettingsButtonUI;
@@ -30,7 +32,10 @@ struct SettingsMaterials {
 struct SettingStringButton;
 struct SettingRadioButton;
 struct SettingSlideButton;
+struct SettingSlideMovingButton;
 struct SettingSelectButton;
+
+struct SettingDraggingSlide(Entity);
 
 impl FromWorld for SettingsMaterials {
   fn from_world(world: &mut World) -> Self {
@@ -352,28 +357,54 @@ fn setup_settings(
                         .insert(SettingRadioButton);
                     }
                     Slide(value) => {
-                      parent.spawn_bundle(NodeBundle {
-                        style: Style {
-                          size: Size::new(Val::Px(500.0), Val::Px(10.0)),
-                          ..Default::default()
-                        },
-                        material: materials.slide_bar.clone(),
-                        ..Default::default()
-                      });
-                      parent.spawn_bundle(NodeBundle {
-                        style: Style {
-                          size: Size::new(Val::Px(25.0), Val::Px(25.0)),
-                          position_type: PositionType::Absolute,
-                          position: Rect {
-                            top: Val::Px(12.5),
-                            left: Val::Px(value * 500.0 - 12.5),
+                      parent
+                        .spawn_bundle(ButtonBundle {
+                          style: Style {
+                            size: Size::new(Val::Auto, Val::Px(50.0)),
+                            padding: Rect {
+                              left: Val::Px(12.5),
+                              right: Val::Px(12.5),
+                              ..Default::default()
+                            },
+                            align_items: AlignItems::Center,
+                            justify_content: JustifyContent::Center,
                             ..Default::default()
                           },
+                          material: materials.transparent.clone(),
                           ..Default::default()
-                        },
-                        material: materials.slide_button.clone(),
-                        ..Default::default()
-                      });
+                        })
+                        .with_children(|parent| {
+                          parent
+                            .spawn_bundle(NodeBundle {
+                              style: Style {
+                                size: Size::new(Val::Px(SLIDER_LENGTH), Val::Px(10.0)),
+                                ..Default::default()
+                              },
+                              material: materials.slide_bar.clone(),
+                              ..Default::default()
+                            })
+                            .insert(FocusPolicy::Pass);
+                          parent
+                            .spawn_bundle(NodeBundle {
+                              style: Style {
+                                size: Size::new(Val::Px(25.0), Val::Px(25.0)),
+                                position_type: PositionType::Absolute,
+                                position: Rect {
+                                  top: Val::Px(12.5),
+                                  left: Val::Px(value * SLIDER_LENGTH),
+                                  ..Default::default()
+                                },
+                                ..Default::default()
+                              },
+                              material: materials.slide_button.clone(),
+                              ..Default::default()
+                            })
+                            .insert(FocusPolicy::Pass)
+                            .insert(SettingSlideMovingButton);
+                        })
+                        .insert(st)
+                        .insert(item)
+                        .insert(SettingSlideButton);
                     }
                     Select(selected, list) => {
                       parent
@@ -607,6 +638,58 @@ fn update_string_settings(
   }
 }
 
+fn slide_button_clicked(
+  mut commands: Commands,
+  query: Query<(&Interaction, Entity), (Changed<Interaction>, With<SettingSlideButton>)>,
+) {
+  for (interaction, entity) in query.iter() {
+    match *interaction {
+      Interaction::Clicked => {
+        commands.insert_resource(SettingDraggingSlide(entity));
+      }
+      Interaction::None | Interaction::Hovered => {
+        commands.remove_resource::<SettingDraggingSlide>();
+      }
+    }
+  }
+}
+
+fn drag_slide_button(
+  mouse_position: Res<MousePosition>,
+  dragging_slide: Option<Res<SettingDraggingSlide>>,
+  mut query: Query<(&GlobalTransform, &mut SettingType)>,
+) {
+  if let Some(slide) = dragging_slide {
+    if let Ok((transform, mut stype)) = query.get_mut(slide.0) {
+      let position = transform.translation;
+      let value = (mouse_position.0.x - (position.x - SLIDER_LENGTH / 2.0)) / SLIDER_LENGTH;
+      let value = if value > 1.0 {
+        1.0
+      } else if value < 0.0 {
+        0.0
+      } else {
+        value
+      };
+      *stype = SettingType::Slide(value);
+    }
+  }
+}
+
+fn update_slide_button(
+  query: Query<(&SettingType, &Children), With<SettingSlideButton>>,
+  mut child_query: Query<&mut Style, With<SettingSlideMovingButton>>,
+) {
+  for (stype, children) in query.iter() {
+    if let SettingType::Slide(value) = &stype {
+      for child in children.iter() {
+        if let Ok(mut style) = child_query.get_mut(*child) {
+          style.position.left = Val::Px(value * SLIDER_LENGTH);
+        }
+      }
+    }
+  }
+}
+
 fn destroy_settings(mut commands: Commands, query: Query<Entity, With<SettingsUI>>) {
   for entity in query.iter() {
     commands.entity(entity).despawn_recursive();
@@ -640,9 +723,12 @@ impl Plugin for SettingsPlugin {
           .with_system(string_button_clicked.system().label("renew"))
           .with_system(radio_button_clicked.system().label("renew"))
           .with_system(select_button_clicked.system().label("renew"))
+          .with_system(slide_button_clicked.system().label("renew"))
           .with_system(update_string_settings.system().after("renew"))
           .with_system(update_radio_material.system().after("renew"))
-          .with_system(update_select_button.system().after("renew")),
+          .with_system(update_select_button.system().after("renew"))
+          .with_system(drag_slide_button.system().after("renew"))
+          .with_system(update_slide_button.system().after("renew")),
       )
       .add_system_set(SystemSet::on_exit(AppState::Settings).with_system(destroy_settings.system()))
       .add_system_set(SystemSet::on_pause(AppState::Settings).with_system(hide_ui.system()))

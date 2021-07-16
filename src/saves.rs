@@ -1,16 +1,16 @@
+use crate::crypto::Crypto;
+use bevy::prelude::*;
 use bincode::deserialize;
 use home::home_dir;
-use bevy::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use std::fs::create_dir_all;
-use std::fs::remove_file;
 use std::fs::read;
+use std::fs::remove_file;
 use std::fs::write;
 use std::path::PathBuf;
 use std::time::Duration;
 use std::time::SystemTime;
-use crate::crypto::Crypto;
 
 /// Game Data
 #[derive(Serialize, Deserialize, Debug, Clone)]

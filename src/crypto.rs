@@ -1,6 +1,6 @@
-use magic_crypt::MagicCryptTrait;
 use magic_crypt::MagicCrypt256;
 use magic_crypt::MagicCryptError;
+use magic_crypt::MagicCryptTrait;
 
 /// encrypt data
 pub struct Crypto {
@@ -8,7 +8,6 @@ pub struct Crypto {
 }
 
 impl Crypto {
-
   pub fn new(key: &str) -> Self {
     Crypto {
       cipher: new_magic_crypt!(key, 256),

@@ -1,9 +1,9 @@
 use crate::consts::*;
+use crate::crypto::Crypto;
 use crate::game::GameAutoSaveSlot;
 use crate::saves::GameSave;
 use crate::text_input::TextInputText;
 use crate::FontAssets;
-use crate::crypto::Crypto;
 use bevy::prelude::*;
 
 struct LoadGameUI;
