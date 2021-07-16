@@ -479,6 +479,7 @@ fn nav_button_clicked(
           commands.insert_resource(config.get_window_descriptor());
         }
         SettingsNavButton::Reset => {
+          let config = GameConfig::default();
           for (item, mut stype) in query_set.q1_mut().iter_mut() {
             *stype = config.get_settings_type(item);
           }
