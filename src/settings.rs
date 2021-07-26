@@ -142,7 +142,7 @@ fn setup_settings(
             horizontal: HorizontalAlign::Center,
           };
           let button_style = Style {
-            size: Size::new(Val::Percent(80.0), Val::Px(40.0)),
+            size: Size::new(Val::Px(200.0), Val::Px(40.0)),
             margin: Rect {
               top: Val::Px(20.0),
               ..Default::default()
@@ -225,7 +225,7 @@ fn setup_settings(
             ("保存先", SaveDir),
             ("フルスクリーン", Fullscreen),
             ("解像度", Resolution),
-            ("装飾", Decorations),
+            ("ウィンドウ装飾", Decorations),
             ("マウスの方向に攻撃", AttackToMouse),
             ("マウスの方向に突撃", AssaultToMouse),
             ("マウス感度", MouseSensitivity),
@@ -558,7 +558,6 @@ fn update_radio_material(
             materials.radio_uncheck_hover.clone()
           }
         }
-
         Interaction::None => {
           if *checked {
             materials.radio_check_normal.clone()
