@@ -15,7 +15,7 @@ pub fn get_staff_text() -> Vec<StaffTextLine> {
   use StaffTextSize::*;
   vec![
     Text("UPSTREAM", Ultra),
-    Text("溯流而上", Large),
+    Text("溯流而上", Ultra),
     Space(480.0),
     Text("STAFF", Large),
     Space(60.0),
@@ -69,5 +69,7 @@ pub fn get_staff_text() -> Vec<StaffTextLine> {
     Space(480.0),
     Text("© KuzumajoStudio", Medium),
     Text("© 屑魔女工作室", Medium),
+    Space(480.0),
+    Text("av419421212", Small),
   ]
 }

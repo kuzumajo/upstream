@@ -16,12 +16,14 @@ enum PlayerAttackState {
   AttackBBB(Timer),
 
   /// both A & B clicked
-  Parry(Timer),
+  Parry,
 
+  /// Player assault
+  Assault(Vec2, Timer),
   /// Assault + A
-  AssaultA(Timer),
+  AssaultA(Vec2, Timer),
   /// Assault + B
-  AssaultB(Timer),
+  AssaultB(Vec2, Timer),
 
   Stand,
 }
@@ -37,17 +39,18 @@ enum PlayerAttackSecondStage {
 
 struct Player;
 
+/// Player can not attack again
 /// <https://kuzumajo.github.io/wiki/#/combat/state?id=%e6%99%ae%e6%94%bb%e5%86%b7%e5%8d%b4>
 struct PlayerAttackCoolDown(Timer);
 
-
+/// Player can not assault again
 /// <https://kuzumajo.github.io/wiki/#/combat/state?id=%e5%86%b2%e5%88%ba%e5%86%b7%e5%8d%b4>
 struct PlayerAssaultCoolDown(Timer);
 
 fn attack_cool_down(
   mut commands: Commands,
   time: Res<Time>,
-  mut query: Query<(Entity, &mut PlayerAttackCoolDown)>,
+  mut query: Query<(Entity, &mut PlayerAttackCoolDown), With<Player>>,
 ) {
   for (entity, mut cd) in query.iter_mut() {
     if cd.0.tick(time.delta()).finished() {
@@ -59,7 +62,7 @@ fn attack_cool_down(
 fn assault_cool_down(
   mut commands: Commands,
   time: Res<Time>,
-  mut query: Query<(Entity, &mut PlayerAssaultCoolDown)>,
+  mut query: Query<(Entity, &mut PlayerAssaultCoolDown), With<Player>>,
 ) {
   for (entity, mut cd) in query.iter_mut() {
     if cd.0.tick(time.delta()).finished() {
@@ -84,37 +87,51 @@ when in
                `- player clicked B : enter new stage A+B
 */
 
+/// Stand => AttackA,
+/// Stand => AttackB
 fn emit_first_attack_stage(
   mut commands: Commands,
   mut query: Query<
     (Entity, &mut PlayerAttackState),
-    (With<Player>, Without<PlayerAttackCoolDown>, Without<PlayerAttackFirstStage>)
+    (
+      With<Player>,
+      Without<PlayerAttackCoolDown>,
+      Without<PlayerAttackFirstStage>,
+      Without<PlayerAttackSecondStage>,
+    )
   >,
   mouse_button_input: Res<Input<MouseButton>>,
 ) {
   for (entity, mut state) in query.iter_mut() {
 
-    // attack A
-    if mouse_button_input.just_pressed(MouseButton::Left) {
-      *state = PlayerAttackState::AttackA(Timer::from_seconds(0.2, false));
-      commands
-        .entity(entity)
-        .insert(PlayerAttackFirstStage::AttackA(Timer::from_seconds(1.5, false)))
-        .insert(PlayerAttackCoolDown(Timer::from_seconds(0.2, false)));
-    }
-    
-    // attack B
-    if mouse_button_input.just_pressed(MouseButton::Right) {
-      *state = PlayerAttackState::AttackB(Timer::from_seconds(0.2, false));
-      commands
-        .entity(entity)
-        .insert(PlayerAttackFirstStage::AttackB(Timer::from_seconds(1.5, false)))
-        .insert(PlayerAttackCoolDown(Timer::from_seconds(0.2, false)));
+    match *state {
+      PlayerAttackState::Stand => {
+        // attack A
+        if mouse_button_input.just_pressed(MouseButton::Left) {
+          *state = PlayerAttackState::AttackA(Timer::from_seconds(0.2, false));
+          commands
+            .entity(entity)
+            .insert(PlayerAttackFirstStage::AttackA(Timer::from_seconds(1.5, false)))
+            .insert(PlayerAttackCoolDown(Timer::from_seconds(0.2, false)));
+        }
+        // attack B
+        if mouse_button_input.just_pressed(MouseButton::Right) {
+          *state = PlayerAttackState::AttackB(Timer::from_seconds(0.2, false));
+          commands
+            .entity(entity)
+            .insert(PlayerAttackFirstStage::AttackB(Timer::from_seconds(1.5, false)))
+            .insert(PlayerAttackCoolDown(Timer::from_seconds(0.2, false)));
+        }
+      }
+      _ => { }
     }
 
   }
 }
 
+/// AttackA => AttackAA,
+/// AttackA => AttackAB,
+/// AttackB => AttackBB
 fn emit_second_attack_stage(
   mut commands: Commands,
   mut query: Query<
@@ -156,6 +173,7 @@ fn emit_second_attack_stage(
   }
 }
 
+/// AttackBB => AttackBBB
 fn emit_third_attack_stage(
   mut commands: Commands,
   mut query: Query<
@@ -174,6 +192,81 @@ fn emit_third_attack_stage(
             // FIXME: here should cool down for 1.0s or 1.4s?
             .insert(PlayerAttackCoolDown(Timer::from_seconds(1.0, false)));
         }
+      }
+    }
+  }
+}
+
+/// AttackA => Parry
+/// AttackB => Parry
+fn emit_parry_state(
+  mut commands: Commands,
+  mut query: Query<
+    (Entity, &PlayerAttackFirstStage, &mut PlayerAttackState),
+    With<Player>,
+  >,
+  mouse_button_input: Res<Input<MouseButton>>,
+) {
+  for (entity, stage, mut state) in query.iter_mut() {
+    let button = match stage {
+      &PlayerAttackFirstStage::AttackA(_) => MouseButton::Right,
+      &PlayerAttackFirstStage::AttackB(_) => MouseButton::Left,
+    };
+    if mouse_button_input.just_pressed(button) {
+      *state = PlayerAttackState::Parry;
+      commands.entity(entity)
+        .remove::<PlayerAttackFirstStage>();
+    }
+  } 
+}
+
+/// Parry => Stand
+fn leave_parry_state(
+  mut query: Query<(Entity, &mut PlayerAttackState), With<Player>>,
+  mouse_button_input: Res<Input<MouseButton>>,
+) {
+  use PlayerAttackState::*;
+  for (_entity, mut state) in query.iter_mut() {
+    match *state {
+      Parry => {
+        if mouse_button_input.just_released(MouseButton::Left) {
+          // TODO
+          *state = Stand;
+        } else if mouse_button_input.just_released(MouseButton::Right) {
+          // TODO
+          *state = Stand;
+        }
+      }
+      _ => { }
+    }
+  }
+}
+
+/// Stand => Assault
+/// Attack* => Assault
+/// Parry => Assault (FIXME)
+fn emit_assault_state(
+  mut query: Query<&mut PlayerAttackState, With<Player>>,
+  keycode_input: Res<Input<KeyCode>>,
+) {
+  for mut state in query.iter_mut() {
+    if keycode_input.just_pressed(KeyCode::Space) {
+      // FIXME: direction to mouse
+      *state = PlayerAttackState::Assault(Vec2::X, Timer::from_seconds(0.5, false));
+    }
+  }
+}
+
+fn emit_assault_attack_state(
+  mut query: Query<&mut PlayerAttackState, With<Player>>,
+  mouse_button_input: Res<Input<MouseButton>>,
+) {
+  for mut state in query.iter_mut() {
+    if let PlayerAttackState::Assault(vec, ref timer) = *state {
+      if mouse_button_input.just_pressed(MouseButton::Left) {
+        *state = PlayerAttackState::AssaultA(vec, timer.clone());
+      } else if mouse_button_input.just_pressed(MouseButton::Right) {
+        *state = PlayerAttackState::AssaultB(vec, timer.clone());
       }
     }
   }
@@ -217,17 +310,38 @@ fn attack_second_stage_cool_down(
 /// Perform player attacks
 pub struct PlayerAttackPlugin;
 
+#[derive(Debug, Hash, Clone, Eq, PartialEq, SystemLabel)]
+enum GameLabel {
+  /// combo
+  SpecialPlayerState,
+  /// normal attack
+  NormalPlayerState,
+  /// all CDs
+  CoolDown,
+}
+
 impl Plugin for PlayerAttackPlugin {
   fn build(&self, app: &mut AppBuilder) {
-    app.add_system_set(
-      SystemSet::on_update(AppState::InGame)
-        .with_system(attack_cool_down.system().label("cooldown"))
-        .with_system(assault_cool_down.system().label("cooldown"))
-        .with_system(attack_first_stage_cool_down.system().label("cooldown"))
-        .with_system(attack_second_stage_cool_down.system().label("cooldown"))
-        .with_system(emit_first_attack_stage.system().after("cooldown"))
-        .with_system(emit_second_attack_stage.system().after("cooldown"))
-        .with_system(emit_third_attack_stage.system().after("cooldown"))
-    );
+
+    app
+      .add_system_set(SystemSet::on_update(AppState::InGame)
+        .label(GameLabel::CoolDown)
+        .with_system(attack_cool_down.system())
+        .with_system(assault_cool_down.system())
+        .with_system(attack_first_stage_cool_down.system())
+        .with_system(attack_second_stage_cool_down.system()))
+      .add_system_set(SystemSet::on_update(AppState::InGame)
+        .label(GameLabel::SpecialPlayerState)
+        .after(GameLabel::CoolDown)
+        .with_system(emit_second_attack_stage.system())
+        .with_system(emit_third_attack_stage.system())
+        .with_system(emit_parry_state.system())
+        .with_system(leave_parry_state.system())
+        .with_system(emit_assault_state.system())
+        .with_system(emit_assault_attack_state.system()))
+      .add_system_set(SystemSet::on_update(AppState::InGame)
+        .label(GameLabel::NormalPlayerState)
+        .after(GameLabel::SpecialPlayerState)
+        .with_system(emit_first_attack_stage.system()));
   }
 }
