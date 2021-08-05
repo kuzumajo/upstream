@@ -12,7 +12,7 @@ struct StartScrollTimer(Timer);
 
 fn setup_staff(mut commands: Commands, font_assets: Res<FontAssets>) {
   // full list
-  let mut total_y = -120.0;
+  let mut total_y = -98.0;
   for text in get_staff_text() {
     match text {
       StaffTextLine::Space(height) => {
@@ -25,6 +25,7 @@ fn setup_staff(mut commands: Commands, font_assets: Res<FontAssets>) {
           StaffTextSize::Medium => 32.0,
           StaffTextSize::Small => 24.0,
         };
+        total_y += font_size;
         commands
           .spawn_bundle(Text2dBundle {
             text: Text::with_section(
@@ -44,7 +45,6 @@ fn setup_staff(mut commands: Commands, font_assets: Res<FontAssets>) {
           })
           .insert(StaffUI)
           .insert(StaffScroll);
-        total_y += font_size;
       }
     }
   }
