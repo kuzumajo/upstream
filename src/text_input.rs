@@ -106,7 +106,7 @@ fn destroy_text_input(mut commands: Commands, query: Query<Entity, With<TextInpu
 pub struct TextInputPlugin;
 
 impl Plugin for TextInputPlugin {
-  fn build(&self, app: &mut AppBuilder) {
+  fn build(&self, app: &mut App) {
     app
       .add_system_set(
         SystemSet::on_enter(AppState::TextInput).with_system(setup_text_input.system()),

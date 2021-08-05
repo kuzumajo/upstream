@@ -336,7 +336,7 @@ fn perform_shield_attack_bbb(
 pub struct ShieldPlugin;
 
 impl Plugin for ShieldPlugin {
-  fn build(&self, app: &mut AppBuilder) {
+  fn build(&self, app: &mut App) {
     app
       .add_system_set(
         SystemSet::on_update(AppState::InGame)

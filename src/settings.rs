@@ -712,7 +712,7 @@ fn resume_ui(mut query: Query<&mut Style, With<SettingsUI>>) {
 pub struct SettingsPlugin;
 
 impl Plugin for SettingsPlugin {
-  fn build(&self, app: &mut AppBuilder) {
+  fn build(&self, app: &mut App) {
     app
       .init_resource::<SettingsMaterials>()
       .add_system_set(SystemSet::on_enter(AppState::Settings).with_system(setup_settings.system()))

@@ -45,7 +45,7 @@ fn trigger_counter_attack(
 pub struct CounterAttackPlugin;
 
 impl Plugin for CounterAttackPlugin {
-  fn build(&self, app: &mut AppBuilder) {
+  fn build(&self, app: &mut App) {
     app
       .add_system_set(
         SystemSet::on_update(AppState::InGame)

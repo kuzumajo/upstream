@@ -154,7 +154,7 @@ fn recieve_damage(
 pub struct AttackPlugin;
 
 impl Plugin for AttackPlugin {
-  fn build(&self, app: &mut AppBuilder) {
+  fn build(&self, app: &mut App) {
     app
       .insert_resource::<Vec<GroupAttack>>(Vec::new())
       .insert_resource::<Vec<SingleAttack>>(Vec::new())

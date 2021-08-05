@@ -35,7 +35,7 @@ pub fn update_removal_cool_down<T: Component>(
 pub struct CoolDownPlugin;
 
 impl Plugin for CoolDownPlugin {
-  fn build(&self, app: &mut AppBuilder) {
+  fn build(&self, app: &mut App) {
     app
       .add_system_set(
         SystemSet::on_update(AppState::InGame)

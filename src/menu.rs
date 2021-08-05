@@ -165,7 +165,7 @@ fn destroy_menu(mut commands: Commands, query: Query<Entity, With<GameMenuUI>>) 
 pub struct GameMenuPlugin;
 
 impl Plugin for GameMenuPlugin {
-  fn build(&self, app: &mut AppBuilder) {
+  fn build(&self, app: &mut App) {
     app
       .init_resource::<MenuMaterials>()
       .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(setup_menu.system()))
