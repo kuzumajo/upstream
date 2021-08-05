@@ -4,14 +4,23 @@
 
 ## Build
 
+Build on Arch Linux
+
 ```bash
 # preinstall (fast compile)
 pacman -S clang lld
 
-# build and run
-cargo run
-# release
 cargo build --release
 ```
+
+Build for Windows on Arch Linux
+
+**This not work right now since [bevyengine/bevy#2317](https://github.com/bevyengine/bevy/issues/2317) is still open**
+
+```bash
+rustup target add x86_64-pc-windows-gnu
+cargo build --release --target x86_64-pc-windows-gnu
+```
+
 
 [wiki]: https://kuzumajo.github.io/wiki/
