@@ -109,16 +109,16 @@ impl Plugin for TextInputPlugin {
   fn build(&self, app: &mut App) {
     app
       .add_system_set(
-        SystemSet::on_enter(AppState::TextInput).with_system(setup_text_input.system()),
+        SystemSet::on_enter(AppState::TextInput).with_system(setup_text_input),
       )
       .add_system_set(
         SystemSet::on_update(AppState::TextInput)
-          .with_system(input_text.system())
-          .with_system(update_text.system())
-          .with_system(exit_on_esc.system()),
+          .with_system(input_text)
+          .with_system(update_text)
+          .with_system(exit_on_esc),
       )
       .add_system_set(
-        SystemSet::on_exit(AppState::TextInput).with_system(destroy_text_input.system()),
+        SystemSet::on_exit(AppState::TextInput).with_system(destroy_text_input),
       );
   }
 }

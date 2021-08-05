@@ -216,16 +216,16 @@ impl Plugin for ControlPanelPlugin {
     app
       .init_resource::<ControlPanelMaterials>()
       .add_system_set(
-        SystemSet::on_enter(AppState::InGame).with_system(setup_control_panel.system()),
+        SystemSet::on_enter(AppState::InGame).with_system(setup_control_panel),
       )
       .add_system_set(
         SystemSet::on_update(AppState::InGame)
-          .with_system(update_health_bar.system())
-          .with_system(update_energy_bar.system())
-          .with_system(update_health_losing_bar.system()),
+          .with_system(update_health_bar)
+          .with_system(update_energy_bar)
+          .with_system(update_health_losing_bar),
       )
       .add_system_set(
-        SystemSet::on_exit(AppState::InGame).with_system(destroy_control_panel.system()),
+        SystemSet::on_exit(AppState::InGame).with_system(destroy_control_panel),
       );
   }
 }

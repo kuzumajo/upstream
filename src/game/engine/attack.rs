@@ -162,13 +162,13 @@ impl Plugin for AttackPlugin {
         SystemSet::on_update(AppState::InGame)
           .label(GameSystemStage::ProcessDamage)
           .after(GameSystemStage::CreateDamage)
-          .with_system(process_damage.system())
+          .with_system(process_damage)
       )
       .add_system_set(
         SystemSet::on_update(AppState::InGame)
           .label(GameSystemStage::RecieveDamage)
           .after(GameSystemStage::ProcessDamage)
-          .with_system(recieve_damage.system())
+          .with_system(recieve_damage)
       );
   }
 }

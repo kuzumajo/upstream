@@ -58,7 +58,7 @@ impl Plugin for ProjectilePlugin {
       SystemSet::on_update(AppState::InGame)
         .label(GameSystemStage::CreateDamage)
         .after(GameSystemStage::UpdatePosition)
-        .with_system(bullet_collision.system())
+        .with_system(bullet_collision)
     );
   }
 }

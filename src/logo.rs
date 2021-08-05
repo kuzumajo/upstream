@@ -71,8 +71,8 @@ pub struct StudioLogoPlugin;
 impl Plugin for StudioLogoPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_system_set(SystemSet::on_enter(AppState::StudioLogo).with_system(setup_logo.system()))
-      .add_system_set(SystemSet::on_update(AppState::StudioLogo).with_system(logic_logo.system()))
-      .add_system_set(SystemSet::on_exit(AppState::StudioLogo).with_system(destroy_logo.system()));
+      .add_system_set(SystemSet::on_enter(AppState::StudioLogo).with_system(setup_logo))
+      .add_system_set(SystemSet::on_update(AppState::StudioLogo).with_system(logic_logo))
+      .add_system_set(SystemSet::on_exit(AppState::StudioLogo).with_system(destroy_logo));
   }
 }

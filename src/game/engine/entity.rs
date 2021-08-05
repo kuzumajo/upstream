@@ -46,7 +46,7 @@ impl Plugin for EntityPlugin {
       SystemSet::on_update(AppState::InGame)
         .label(GameSystemStage::UpdatePosition)
         .before(GameSystemStage::CreateDamage)
-        .with_system(movement.system())
+        .with_system(movement)
     );
   }
 }

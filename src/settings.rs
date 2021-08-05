@@ -715,11 +715,11 @@ impl Plugin for SettingsPlugin {
   fn build(&self, app: &mut App) {
     app
       .init_resource::<SettingsMaterials>()
-      .add_system_set(SystemSet::on_enter(AppState::Settings).with_system(setup_settings.system()))
+      .add_system_set(SystemSet::on_enter(AppState::Settings).with_system(setup_settings))
       .add_system_set(
         SystemSet::on_update(AppState::Settings)
-          .with_system(button_material_change.system())
-          .with_system(nav_button_clicked.system())
+          .with_system(button_material_change)
+          .with_system(nav_button_clicked)
           .with_system(string_button_clicked.system().label("renew"))
           .with_system(radio_button_clicked.system().label("renew"))
           .with_system(select_button_clicked.system().label("renew"))
@@ -730,12 +730,12 @@ impl Plugin for SettingsPlugin {
           .with_system(drag_slide_button.system().after("renew"))
           .with_system(update_slide_button.system().after("renew")),
       )
-      .add_system_set(SystemSet::on_exit(AppState::Settings).with_system(destroy_settings.system()))
-      .add_system_set(SystemSet::on_pause(AppState::Settings).with_system(hide_ui.system()))
+      .add_system_set(SystemSet::on_exit(AppState::Settings).with_system(destroy_settings))
+      .add_system_set(SystemSet::on_pause(AppState::Settings).with_system(hide_ui))
       .add_system_set(
         SystemSet::on_resume(AppState::Settings)
-          .with_system(resume_ui.system())
-          .with_system(resume_settings.system()),
+          .with_system(resume_ui)
+          .with_system(resume_settings),
       );
   }
 }

@@ -53,7 +53,7 @@ impl Plugin for CounterAttackPlugin {
           .after(GameSystemStage::CoolDown)
           .label(GameSystemStage::CreateDamage)
           .before(GameSystemStage::NormalAttack)
-          .with_system(trigger_counter_attack.system())
+          .with_system(trigger_counter_attack)
       );
   }
 }

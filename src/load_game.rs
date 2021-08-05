@@ -239,16 +239,16 @@ impl Plugin for LoadGamePlugin {
   fn build(&self, app: &mut App) {
     app
       .init_resource::<LoadGameMaterials>()
-      .add_system_set(SystemSet::on_enter(AppState::LoadGame).with_system(setup_load_game.system()))
+      .add_system_set(SystemSet::on_enter(AppState::LoadGame).with_system(setup_load_game))
       .add_system_set(
         SystemSet::on_update(AppState::LoadGame)
-          .with_system(slot_material_change.system())
-          .with_system(slot_button_click.system()),
+          .with_system(slot_material_change)
+          .with_system(slot_button_click),
       )
       .add_system_set(
-        SystemSet::on_exit(AppState::LoadGame).with_system(destroy_load_game.system()),
+        SystemSet::on_exit(AppState::LoadGame).with_system(destroy_load_game),
       )
-      .add_system_set(SystemSet::on_pause(AppState::LoadGame).with_system(hide_ui.system()))
+      .add_system_set(SystemSet::on_pause(AppState::LoadGame).with_system(hide_ui))
       .add_system_set(
         SystemSet::on_resume(AppState::LoadGame)
           .with_system(resume_game.system().label("check"))

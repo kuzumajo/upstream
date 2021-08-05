@@ -60,19 +60,19 @@ impl Plugin for HealthPlugin {
         SystemSet::on_update(AppState::InGame)
           .label(GameSystemStage::CheckDead)
           .after(GameSystemStage::PostDamage)
-          .with_system(update_health_death.system())
+          .with_system(update_health_death)
       )
       .add_system_set(
         SystemSet::on_update(AppState::InGame)
           .label(GameSystemStage::PostDamage)
           .after(GameSystemStage::RecieveDamage)
-          .with_system(update_lock_health.system())
+          .with_system(update_lock_health)
       )
       .add_system_set(
         SystemSet::on_update(AppState::InGame)
           .label(GameSystemStage::ClearDead)
           .after(GameSystemStage::CheckDead)
-          .with_system(remove_dead_entity.system())
+          .with_system(remove_dead_entity)
       );
   }
 }

@@ -75,8 +75,8 @@ fn main() {
     .insert_resource(game_config)
     .insert_resource(Crypto::new(CRYPTO_KEY))
     .insert_resource(MousePosition(Vec2::ZERO))
-    .add_system(update_mouse_position.system())
-    .add_system(issue_1135_system.system())
+    .add_system(update_mouse_position)
+    .add_system(issue_1135_system)
     .add_plugins(DefaultPlugins)
     .init_resource::<FontAssets>()
     .add_plugin(StudioLogoPlugin)
@@ -86,7 +86,7 @@ fn main() {
     .add_plugin(TextInputPlugin)
     .add_plugin(SettingsPlugin)
     .add_plugins(UpstreamGamePlugins)
-    .add_startup_system(insert_camera.system())
+    .add_startup_system(insert_camera)
     .add_state(AppState::StudioLogo)
     .run();
 }

@@ -40,8 +40,8 @@ impl Plugin for CoolDownPlugin {
       .add_system_set(
         SystemSet::on_update(AppState::InGame)
           .label(GameSystemStage::CoolDown)
-          .with_system(update_removal_cool_down::<AttackCoolDown>.system())
-          .with_system(update_removal_cool_down::<AssaultCoolDown>.system())
+          .with_system(update_removal_cool_down::<AttackCoolDown>)
+          .with_system(update_removal_cool_down::<AssaultCoolDown>)
       );
   }
 }

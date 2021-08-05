@@ -316,22 +316,22 @@ impl Plugin for PlayerAttackPlugin {
     app
       .add_system_set(SystemSet::on_update(AppState::InGame)
         .label(GameLabel::CoolDown)
-        .with_system(attack_cool_down.system())
-        .with_system(assault_cool_down.system())
-        .with_system(attack_first_stage_cool_down.system())
-        .with_system(attack_second_stage_cool_down.system()))
+        .with_system(attack_cool_down)
+        .with_system(assault_cool_down)
+        .with_system(attack_first_stage_cool_down)
+        .with_system(attack_second_stage_cool_down))
       .add_system_set(SystemSet::on_update(AppState::InGame)
         .label(GameLabel::SpecialPlayerState)
         .after(GameLabel::CoolDown)
-        .with_system(emit_second_attack_stage.system())
-        .with_system(emit_third_attack_stage.system())
-        .with_system(emit_parry_state.system())
-        .with_system(leave_parry_state.system())
-        .with_system(emit_assault_state.system())
-        .with_system(emit_assault_attack_state.system()))
+        .with_system(emit_second_attack_stage)
+        .with_system(emit_third_attack_stage)
+        .with_system(emit_parry_state)
+        .with_system(leave_parry_state)
+        .with_system(emit_assault_state)
+        .with_system(emit_assault_attack_state))
       .add_system_set(SystemSet::on_update(AppState::InGame)
         .label(GameLabel::NormalPlayerState)
         .after(GameLabel::SpecialPlayerState)
-        .with_system(emit_first_attack_stage.system()));
+        .with_system(emit_first_attack_stage));
   }
 }

@@ -168,14 +168,14 @@ impl Plugin for GameMenuPlugin {
   fn build(&self, app: &mut App) {
     app
       .init_resource::<MenuMaterials>()
-      .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(setup_menu.system()))
+      .add_system_set(SystemSet::on_enter(AppState::Menu).with_system(setup_menu))
       .add_system_set(
         SystemSet::on_update(AppState::Menu)
-          .with_system(button_material_change.system())
-          .with_system(button_click.system()),
+          .with_system(button_material_change)
+          .with_system(button_click),
       )
-      .add_system_set(SystemSet::on_exit(AppState::Menu).with_system(destroy_menu.system()))
-      .add_system_set(SystemSet::on_pause(AppState::Menu).with_system(hide_ui.system()))
-      .add_system_set(SystemSet::on_resume(AppState::Menu).with_system(resume_ui.system()));
+      .add_system_set(SystemSet::on_exit(AppState::Menu).with_system(destroy_menu))
+      .add_system_set(SystemSet::on_pause(AppState::Menu).with_system(hide_ui))
+      .add_system_set(SystemSet::on_resume(AppState::Menu).with_system(resume_ui));
   }
 }
