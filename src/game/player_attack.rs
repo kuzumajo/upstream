@@ -311,7 +311,7 @@ fn attack_second_stage_cool_down(
 pub struct PlayerAttackPlugin;
 
 impl Plugin for PlayerAttackPlugin {
-  fn build(&self, app: &mut AppBuilder) {
+  fn build(&self, app: &mut App) {
 
     app
       .add_system_set(SystemSet::on_update(AppState::InGame)

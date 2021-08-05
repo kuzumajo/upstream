@@ -69,7 +69,7 @@ fn destroy_logo(mut commands: Commands, query: Query<Entity, With<StudioLogoUI>>
 pub struct StudioLogoPlugin;
 
 impl Plugin for StudioLogoPlugin {
-  fn build(&self, app: &mut AppBuilder) {
+  fn build(&self, app: &mut App) {
     app
       .add_system_set(SystemSet::on_enter(AppState::StudioLogo).with_system(setup_logo.system()))
       .add_system_set(SystemSet::on_update(AppState::StudioLogo).with_system(logic_logo.system()))

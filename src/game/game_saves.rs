@@ -44,7 +44,7 @@ fn update_auto_save(
 pub struct GameSavePlugin;
 
 impl Plugin for GameSavePlugin {
-  fn build(&self, app: &mut AppBuilder) {
+  fn build(&self, app: &mut App) {
     app
       .add_system_set(SystemSet::on_enter(AppState::InGame).with_system(enter_game.system()))
       .add_system_set(

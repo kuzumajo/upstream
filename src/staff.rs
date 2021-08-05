@@ -82,7 +82,7 @@ fn exit_staff(mut commands: Commands, query: Query<Entity, With<StaffUI>>) {
 pub struct StaffPlugin;
 
 impl Plugin for StaffPlugin {
-  fn build(&self, app: &mut AppBuilder) {
+  fn build(&self, app: &mut App) {
     app
       .add_system_set(SystemSet::on_enter(AppState::Staff).with_system(setup_staff.system()))
       .add_system_set(

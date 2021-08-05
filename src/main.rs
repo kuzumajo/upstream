@@ -1,3 +1,5 @@
+#![windows_subsystem = "windows"]
+
 #[macro_use]
 extern crate magic_crypt;
 
@@ -67,7 +69,7 @@ fn issue_1135_system(mut query: Query<(&Node, &mut Visible), With<Text>>) {
 fn main() {
   let game_config = GameConfig::load();
 
-  App::build()
+  App::new()
     .insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.9)))
     .insert_resource(game_config.get_window_descriptor())
     .insert_resource(game_config)

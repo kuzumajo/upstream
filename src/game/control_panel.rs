@@ -212,7 +212,7 @@ fn destroy_control_panel(mut commands: Commands, query: Query<Entity, With<Contr
 pub struct ControlPanelPlugin;
 
 impl Plugin for ControlPanelPlugin {
-  fn build(&self, app: &mut AppBuilder) {
+  fn build(&self, app: &mut App) {
     app
       .init_resource::<ControlPanelMaterials>()
       .add_system_set(

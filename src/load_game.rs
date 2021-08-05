@@ -236,7 +236,7 @@ fn destroy_load_game(mut commands: Commands, query: Query<Entity, With<LoadGameU
 pub struct LoadGamePlugin;
 
 impl Plugin for LoadGamePlugin {
-  fn build(&self, app: &mut AppBuilder) {
+  fn build(&self, app: &mut App) {
     app
       .init_resource::<LoadGameMaterials>()
       .add_system_set(SystemSet::on_enter(AppState::LoadGame).with_system(setup_load_game.system()))
