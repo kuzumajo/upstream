@@ -310,16 +310,6 @@ fn attack_second_stage_cool_down(
 /// Perform player attacks
 pub struct PlayerAttackPlugin;
 
-#[derive(Debug, Hash, Clone, Eq, PartialEq, SystemLabel)]
-enum GameLabel {
-  /// combo
-  SpecialPlayerState,
-  /// normal attack
-  NormalPlayerState,
-  /// all CDs
-  CoolDown,
-}
-
 impl Plugin for PlayerAttackPlugin {
   fn build(&self, app: &mut AppBuilder) {
 

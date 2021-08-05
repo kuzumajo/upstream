@@ -8,7 +8,7 @@ pub enum AppState {
   /// staff page
   Staff,
   /// gaming page
-  /// WARNING: make sure Res<GameSave> exists
+  /// WARNING: make sure `Res<GameSave>` exists
   InGame,
   /// load saves or start a new game
   LoadGame,
