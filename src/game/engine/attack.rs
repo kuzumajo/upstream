@@ -88,7 +88,7 @@ pub enum AttackDamage {
 }
 
 /// convert group attack to single attack
-fn flat_damage(
+fn process_damage(
   mut group_attacks: ResMut<Vec<GroupAttack>>,
   mut single_attacks: ResMut<Vec<SingleAttack>>,
   query: Query<(Entity, &Position, &CollideRadius)>,
@@ -161,9 +161,8 @@ impl Plugin for AttackPlugin {
       .add_system_set(
         SystemSet::on_update(AppState::InGame)
           .label(GameSystemStage::ProcessDamage)
-          .before(GameSystemStage::RecieveDamage)
           .after(GameSystemStage::CreateDamage)
-          .with_system(flat_damage.system())
+          .with_system(process_damage.system())
       )
       .add_system_set(
         SystemSet::on_update(AppState::InGame)

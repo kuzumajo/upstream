@@ -47,6 +47,7 @@ impl Plugin for CoolDownPlugin {
 }
 
 /// useless
+/// TODO: remove it
 macro_rules! _cool_down_system {
   ($func_name:ident, $t:ty) => {
     fn $func_name(

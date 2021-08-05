@@ -2,8 +2,14 @@ use bevy::prelude::*;
 
 #[derive(Debug, Hash, Clone, Eq, PartialEq, SystemLabel)]
 pub enum GameSystemStage {
-  /// remove cool down tags if they where finished
+  /// physical engine
+  UpdatePosition,
+  /// remove cool down tags if they were finished
   CoolDown,
+  /// Perform special attack
+  SpecialAttack,
+  /// Perform normal attack
+  NormalAttack,
   /// calculate damages created in the whole map
   CreateDamage,
   /// turn all group damages to single damages
@@ -16,9 +22,4 @@ pub enum GameSystemStage {
   CheckDead,
   /// remove all Dead entities
   ClearDead,
-
-  /// Perform special attack
-  SpecialAttack,
-  /// Perform normal attack
-  NormalAttack,
 }

@@ -2,21 +2,22 @@ use bevy::prelude::*;
 
 use crate::{consts::AppState, game::{GameSystemStage, engine::entity::Player}};
 
-use super::{attack::{AttackArea, AttackDamage, GroupAttack}, cooldown::{AttackCoolDown, RemovalCoolDown}};
+use super::{attack::{AttackArea, AttackDamage, GroupAttack}, cooldown::{AttackCoolDown, RemovalCoolDown}, entity::Position};
 
 pub struct CounterAttack;
 
 pub struct CounterAttackObject;
 
+/// Trigger counter attack
 fn trigger_counter_attack(
   mut commands: Commands,
   mut attacks: ResMut<Vec<GroupAttack>>,
   mouse_input: Res<Input<MouseButton>>,
-  query: Query<Entity, (With<Player>, Without<AttackCoolDown>, With<CounterAttack>)>,
+  query: Query<(Entity, &Position), (With<Player>, Without<AttackCoolDown>, With<CounterAttack>)>,
   obj_query: Query<Entity, With<CounterAttackObject>>,
 ) {
   if mouse_input.just_pressed(MouseButton::Left) {
-    for entity in query.iter() {
+    if let Ok((entity, position)) = query.single() {
       commands.entity(entity)
         // add 0s attack cd, which will be removed in next frame
         .insert(AttackCoolDown)
@@ -26,7 +27,7 @@ fn trigger_counter_attack(
 
       attacks.push(GroupAttack {
         area: AttackArea::Circle {
-          o: Vec2::new(0.0, 0.0),
+          o: position.0,
           r: 350.0,
         },
         // find all enermies with CounterAttackObject

@@ -41,6 +41,7 @@ fn update_health_death(
   }
 }
 
+/// Remove entity which is marked as Dead
 fn remove_dead_entity(
   mut commands: Commands,
   query: Query<Entity, With<Dead>>,
