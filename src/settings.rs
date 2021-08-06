@@ -46,20 +46,20 @@ impl FromWorld for SettingsMaterials {
     let asset_server = world_cell.get_resource::<AssetServer>().unwrap();
 
     SettingsMaterials {
-      button_pressed: materials.add(Color::rgb(0.8, 0.8, 0.8).into()),
-      button_normal: materials.add(Color::rgb(0.9, 0.9, 0.9).into()),
-      button_hover: materials.add(Color::rgb(0.85, 0.85, 0.85).into()),
+      button_pressed: materials.add(asset_server.load("images/ui/button-pressed.png").into()),
+      button_normal: materials.add(asset_server.load("images/ui/button-normal.png").into()),
+      button_hover: materials.add(asset_server.load("images/ui/button-hover.png").into()),
 
-      radio_check_pressed: materials.add(Color::rgb(0.18, 0.8, 0.27).into()),
-      radio_check_normal: materials.add(Color::rgb(0.24, 0.99, 0.34).into()),
-      radio_check_hover: materials.add(Color::rgb(0.22, 0.90, 0.31).into()),
+      radio_check_pressed: materials.add(asset_server.load("images/ui/checkbox-checked.png").into()),
+      radio_check_normal: materials.add(asset_server.load("images/ui/checkbox-checked.png").into()),
+      radio_check_hover: materials.add(asset_server.load("images/ui/checkbox-checked.png").into()),
 
-      radio_uncheck_pressed: materials.add(Color::rgb(0.71, 0.18, 0.18).into()),
-      radio_uncheck_normal: materials.add(Color::rgb(1.0, 0.25, 0.25).into()),
-      radio_uncheck_hover: materials.add(Color::rgb(0.84, 0.22, 0.22).into()),
+      radio_uncheck_pressed: materials.add(asset_server.load("images/ui/checkbox-unchecked.png").into()),
+      radio_uncheck_normal: materials.add(asset_server.load("images/ui/checkbox-unchecked.png").into()),
+      radio_uncheck_hover: materials.add(asset_server.load("images/ui/checkbox-unchecked.png").into()),
 
-      slide_button: materials.add(asset_server.load("images/slidebutton.png").into()),
-      slide_bar: materials.add(asset_server.load("images/slidebar.png").into()),
+      slide_button: materials.add(asset_server.load("images/ui/slider-button.png").into()),
+      slide_bar: materials.add(asset_server.load("images/ui/slider-bar.png").into()),
 
       nav_bar_background: materials.add(Color::rgb(0.95, 0.95, 0.95).into()),
 
@@ -720,15 +720,15 @@ impl Plugin for SettingsPlugin {
         SystemSet::on_update(AppState::Settings)
           .with_system(button_material_change)
           .with_system(nav_button_clicked)
-          .with_system(string_button_clicked.system().label("renew"))
-          .with_system(radio_button_clicked.system().label("renew"))
-          .with_system(select_button_clicked.system().label("renew"))
-          .with_system(slide_button_clicked.system().label("renew"))
-          .with_system(update_string_settings.system().after("renew"))
-          .with_system(update_radio_material.system().after("renew"))
-          .with_system(update_select_button.system().after("renew"))
-          .with_system(drag_slide_button.system().after("renew"))
-          .with_system(update_slide_button.system().after("renew")),
+          .with_system(string_button_clicked.label("renew"))
+          .with_system(radio_button_clicked.label("renew"))
+          .with_system(select_button_clicked.label("renew"))
+          .with_system(slide_button_clicked.label("renew"))
+          .with_system(update_string_settings.after("renew"))
+          .with_system(update_radio_material.after("renew"))
+          .with_system(update_select_button.after("renew"))
+          .with_system(drag_slide_button.after("renew"))
+          .with_system(update_slide_button.after("renew")),
       )
       .add_system_set(SystemSet::on_exit(AppState::Settings).with_system(destroy_settings))
       .add_system_set(SystemSet::on_pause(AppState::Settings).with_system(hide_ui))
