@@ -15,9 +15,9 @@ cargo build --release
 
 Build for Windows on Arch Linux
 
-**This not work right now since [bevyengine/bevy#2317](https://github.com/bevyengine/bevy/issues/2317) is still open**
-
 ```bash
+pacman -S mingw-w64-gcc
+
 rustup target add x86_64-pc-windows-gnu
 cargo build --release --target x86_64-pc-windows-gnu
 ```

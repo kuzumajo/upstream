@@ -7,6 +7,10 @@
 linker = "/usr/bin/clang"
 rustflags = ["-Clink-arg=-fuse-ld=lld"]
 
+[target.aarch64-unknown-linux-gnu]
+linker = "/usr/bin/aarch64-linux-gnu-gcc"
+rustflags = ["-L/usr/aarch64-linux-gnu/lib64", "-L/usr/aarch64-linux-gnu/lib"]
+
 # NOTE: you must manually install https://github.com/michaeleisel/zld on mac. you can easily do this with the "brew" package manager:
 # `brew install michaeleisel/zld/zld`
 [target.x86_64-apple-darwin]
