@@ -1,8 +1,9 @@
 use bevy::{app::PluginGroupBuilder, prelude::*};
 
-use self::{player::PlayerSpritingPlugin, sprite::SpriteAnimationPlugin};
+use self::{bullet::BulletSpritingPlugin, player::PlayerSpritingPlugin, sprite::SpriteAnimationPlugin};
 
 mod player;
+mod bullet;
 mod sprite;
 
 pub use sprite::SpriteAnimateTimer;
@@ -13,6 +14,7 @@ impl PluginGroup for SpriteSystemPlugins {
   fn build(&mut self, group: &mut PluginGroupBuilder) {
     group
       .add(SpriteAnimationPlugin)
+      .add(BulletSpritingPlugin)
       .add(PlayerSpritingPlugin);
   }
 }

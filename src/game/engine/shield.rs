@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{consts::AppState, game::{entity::projectile::{ProjectileBundle}, sprite::SpriteAnimateTimer, stages::{AttackLabel, GameEngineLabel, TriggerAttackLabel}}};
+use crate::{consts::{AppState, PLAYER_SHIELD_BULLET_SPEED}, game::{entity::projectile::{ProjectileBundle}, sprite::SpriteAnimateTimer, stages::{AttackLabel, GameEngineLabel, TriggerAttackLabel}}};
 
 use super::{attack::{AttackArea, AttackDamage, GroupAttack}, cooldown::{AttackCoolDown, RemovalCoolDown, update_removal_cool_down}, entity::{CollideRadius, Controlling, PlayerState, Position, Velocity}, projectile::BulletProps, soul::SoulPower};
 
@@ -271,7 +271,7 @@ fn perform_shield_attack_b(
       commands.spawn_bundle(ProjectileBundle {
         position: position.clone(),
         // FIXME: correct direction
-        velocity: Velocity(Vec2::X * 1800.0),
+        velocity: Velocity(Vec2::X * PLAYER_SHIELD_BULLET_SPEED),
         bullet: BulletProps {
           owner: Some(entity),
           damage: Some(AttackDamage::Physical {
@@ -301,7 +301,7 @@ fn perform_shield_attack_bb(
       commands.spawn_bundle(ProjectileBundle {
         position: position.clone(),
         // FIXME: correct direction
-        velocity: Velocity(Vec2::X * 1800.0),
+        velocity: Velocity(Vec2::X * PLAYER_SHIELD_BULLET_SPEED),
         bullet: BulletProps {
           owner: Some(entity),
           damage: Some(AttackDamage::Physical {
@@ -331,7 +331,7 @@ fn perform_shield_attack_bbb(
       commands.spawn_bundle(ProjectileBundle {
         position: position.clone(),
         // FIXME: correct direction
-        velocity: Velocity(Vec2::X * 1800.0),
+        velocity: Velocity(Vec2::X * PLAYER_SHIELD_BULLET_SPEED),
         bullet: BulletProps {
           owner: Some(entity),
           damage: Some(AttackDamage::Physical {
