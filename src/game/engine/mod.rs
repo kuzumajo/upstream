@@ -1,20 +1,21 @@
 use bevy::prelude::*;
 
-mod health;
-mod counter_attack;
-mod cooldown;
-mod entity;
-mod attack;
-mod shield;
-mod soul;
-mod projectile;
+pub mod health;
+pub mod counter_attack;
+pub mod cooldown;
+pub mod entity;
+pub mod attack;
+pub mod shield;
+pub mod soul;
+pub mod movement;
+pub mod projectile;
 
 pub struct GameSystemPlugins;
 
 impl PluginGroup for GameSystemPlugins {
   fn build(&mut self, group: &mut bevy::app::PluginGroupBuilder) {
     group
-      .add(entity::EntityPlugin)
+      .add(movement::MovementPlugin)
       .add(shield::ShieldPlugin)
       .add(projectile::ProjectilePlugin)
       .add(attack::AttackPlugin)

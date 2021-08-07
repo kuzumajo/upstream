@@ -1,6 +1,6 @@
 use crate::consts::*;
 use crate::crypto::Crypto;
-use crate::game::GameAutoSaveSlot;
+use crate::game::AutoSaveSlot;
 use crate::saves::GameSave;
 use crate::text_input::TextInputText;
 use crate::FontAssets;
@@ -189,7 +189,7 @@ fn slot_button_click(
   for (interaction, save_slot) in interaction_query.iter_mut() {
     match *interaction {
       Interaction::Clicked => {
-        commands.insert_resource(GameAutoSaveSlot(save_slot.1));
+        commands.insert_resource(AutoSaveSlot(save_slot.1));
         if let Some(save) = &save_slot.0 {
           // start the game directly
           commands.insert_resource(save.clone());

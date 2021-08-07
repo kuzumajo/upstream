@@ -20,7 +20,9 @@ mod text_input;
 use crate::config::GameConfig;
 use crate::consts::*;
 use crate::crypto::Crypto;
-use crate::game::UpstreamGamePlugins;
+use crate::game::GameBasicPlugins;
+use crate::game::GameSystemPlugins;
+use crate::game::SpriteSystemPlugins;
 use crate::load_game::LoadGamePlugin;
 use crate::logo::StudioLogoPlugin;
 use crate::menu::GameMenuPlugin;
@@ -85,7 +87,9 @@ fn main() {
     .add_plugin(LoadGamePlugin)
     .add_plugin(TextInputPlugin)
     .add_plugin(SettingsPlugin)
-    .add_plugins(UpstreamGamePlugins)
+    .add_plugins(GameBasicPlugins)
+    .add_plugins(GameSystemPlugins)
+    .add_plugins(SpriteSystemPlugins)
     .add_startup_system(insert_camera)
     .add_state(AppState::StudioLogo)
     .run();

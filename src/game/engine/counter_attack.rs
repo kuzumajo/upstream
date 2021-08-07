@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{consts::AppState, game::{GameSystemStage, engine::entity::Player}};
+use crate::{consts::AppState, game::{GameSystemStage, engine::entity::Controlling}};
 
 use super::{attack::{AttackArea, AttackDamage, GroupAttack}, cooldown::{AttackCoolDown, RemovalCoolDown}, entity::Position};
 
@@ -13,7 +13,7 @@ fn trigger_counter_attack(
   mut commands: Commands,
   mut attacks: ResMut<Vec<GroupAttack>>,
   mouse_input: Res<Input<MouseButton>>,
-  query: Query<(Entity, &Position), (With<Player>, Without<AttackCoolDown>, With<CounterAttack>)>,
+  query: Query<(Entity, &Position), (With<Controlling>, Without<AttackCoolDown>, With<CounterAttack>)>,
   obj_query: Query<Entity, With<CounterAttackObject>>,
 ) {
   if mouse_input.just_pressed(MouseButton::Left) {

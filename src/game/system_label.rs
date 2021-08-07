@@ -2,6 +2,8 @@ use bevy::prelude::*;
 
 #[derive(Debug, Hash, Clone, Eq, PartialEq, SystemLabel)]
 pub enum GameSystemStage {
+  /// Calculate Velocity
+  UpdateVelocity,
   /// physical engine
   UpdatePosition,
   /// remove cool down tags if they were finished
@@ -22,4 +24,14 @@ pub enum GameSystemStage {
   CheckDead,
   /// remove all Dead entities
   ClearDead,
+  /// finish all tasks
+  Finish,
+}
+
+#[derive(Debug, Hash, Clone, Eq, PartialEq, SystemLabel)]
+pub enum GameSpriteStage {
+  /// change handles
+  ChangeHandle,
+  /// animate sprites
+  AnimateSprite,
 }

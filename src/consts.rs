@@ -36,6 +36,8 @@ pub const SLIDER_LENGTH: f32 = 500.0;
 // game
 pub const GAME_AUTOSAVE_INTERVAL: f32 = 60.0;
 
+pub const PLAYER_MOVE_SPEED: f32 = 200.0;
+
 // crypto
 
 /// Crypto key, but maybe change after release

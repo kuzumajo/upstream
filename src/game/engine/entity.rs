@@ -5,6 +5,9 @@ use crate::{consts::AppState, game::GameSystemStage};
 /// Indentify player
 pub struct Player;
 
+/// entity which is under control
+pub struct Controlling;
+
 #[derive(Clone, Copy)]
 pub struct Position(pub Vec2);
 
@@ -27,26 +30,4 @@ pub enum PlayerState {
 
   Assault,
   Stand,
-}
-
-fn movement(
-  mut query: Query<(&Velocity, &mut Position)>,
-) {
-  for (velocity, mut position) in query.iter_mut() {
-    position.0 += velocity.0;
-  }
-}
-
-/// most basic systems
-pub struct EntityPlugin;
-
-impl Plugin for EntityPlugin {
-  fn build(&self, app: &mut App) {
-    app.add_system_set(
-      SystemSet::on_update(AppState::InGame)
-        .label(GameSystemStage::UpdatePosition)
-        .before(GameSystemStage::CreateDamage)
-        .with_system(movement)
-    );
-  }
 }

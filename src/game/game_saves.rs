@@ -3,30 +3,36 @@ use crate::crypto::Crypto;
 use crate::saves::GameSave;
 use bevy::prelude::*;
 
-pub struct GameAutoSaveSlot(pub u8);
+use super::engine::entity::Controlling;
+use super::entity::player::PlayerBundle;
 
-struct GameAutoSaveTimer(Timer);
+pub struct AutoSaveSlot(pub u8);
+
+struct AutoSaveTimer(Timer);
 
 fn enter_game(
   mut commands: Commands,
   save: Res<GameSave>,
-  slot: Option<Res<GameAutoSaveSlot>>,
+  slot: Option<Res<AutoSaveSlot>>,
   crypto: Res<Crypto>,
 ) {
   if let Some(slot) = slot {
     save.save(&crypto, slot.0).expect("failed to save!");
-    commands.insert_resource(GameAutoSaveTimer(Timer::from_seconds(
+    commands.insert_resource(AutoSaveTimer(Timer::from_seconds(
       GAME_AUTOSAVE_INTERVAL,
       true,
     )));
   }
+
+  // FIXME: debug
+  commands.spawn_bundle(PlayerBundle::default()).insert(Controlling);
 }
 
 fn update_auto_save(
   time: Res<Time>,
-  timer: Option<ResMut<GameAutoSaveTimer>>,
+  timer: Option<ResMut<AutoSaveTimer>>,
   save: Res<GameSave>,
-  slot: Option<Res<GameAutoSaveSlot>>,
+  slot: Option<Res<AutoSaveSlot>>,
   crypto: Res<Crypto>,
 ) {
   if let Some(mut timer) = timer {

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{consts::AppState, game::GameSystemStage};
 
-use super::{attack::{AttackArea, AttackDamage, GroupAttack}, cooldown::{AttackCoolDown, RemovalCoolDown, update_removal_cool_down}, entity::{CollideRadius, Player, PlayerState, Position, Velocity}, projectile::{BulletProps, ProjectileBundle}, soul::SoulPower};
+use super::{attack::{AttackArea, AttackDamage, GroupAttack}, cooldown::{AttackCoolDown, RemovalCoolDown, update_removal_cool_down}, entity::{CollideRadius, Controlling, PlayerState, Position, Velocity}, projectile::{BulletProps, ProjectileBundle}, soul::SoulPower};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum ShieldPreviousAttack {
@@ -22,7 +22,7 @@ fn trigger_shield_attack_a(
   mut commands: Commands,
   mut query: Query<
     (Entity, &mut PlayerState),
-    (With<Player>, Without<AttackCoolDown>, Without<ShieldPreviousAttack>)
+    (With<Controlling>, Without<AttackCoolDown>, Without<ShieldPreviousAttack>)
   >,
   mouse_input: Res<Input<MouseButton>>,
 ) {
@@ -45,7 +45,7 @@ fn trigger_shield_attack_aa(
   mut commands: Commands,
   mut query: Query<
     (Entity, &mut PlayerState, &ShieldPreviousAttack),
-    (With<Player>, Without<AttackCoolDown>)
+    (With<Controlling>, Without<AttackCoolDown>)
   >,
   mouse_input: Res<Input<MouseButton>>,
 ) {
@@ -68,7 +68,7 @@ fn trigger_shield_attack_ab(
   mut commands: Commands,
   mut query: Query<
     (Entity, &mut PlayerState, &ShieldPreviousAttack, &mut SoulPower),
-    (With<Player>, Without<AttackCoolDown>)
+    (With<Controlling>, Without<AttackCoolDown>)
   >,
   mouse_input: Res<Input<MouseButton>>,
 ) {
@@ -93,7 +93,7 @@ fn trigger_shield_attack_b(
   mut commands: Commands,
   mut query: Query<
     (Entity, &mut PlayerState, &mut SoulPower),
-    (With<Player>, Without<AttackCoolDown>, Without<ShieldPreviousAttack>),
+    (With<Controlling>, Without<AttackCoolDown>, Without<ShieldPreviousAttack>),
   >,
   mouse_input: Res<Input<MouseButton>>,
 ) {
@@ -118,7 +118,7 @@ fn trigger_shield_attack_bb(
   mut commands: Commands,
   mut query: Query<
     (Entity, &mut PlayerState, &ShieldPreviousAttack, &mut SoulPower),
-    (With<Player>, Without<AttackCoolDown>),
+    (With<Controlling>, Without<AttackCoolDown>),
   >,
   mouse_input: Res<Input<MouseButton>>,
 ) {
@@ -143,7 +143,7 @@ fn trigger_shield_attack_bbb(
   mut commands: Commands,
   mut query: Query<
     (Entity, &mut PlayerState, &ShieldPreviousAttack, &mut SoulPower),
-    (With<Player>, Without<AttackCoolDown>),
+    (With<Controlling>, Without<AttackCoolDown>),
   >,
   mouse_input: Res<Input<MouseButton>>,
 ) {
@@ -151,7 +151,7 @@ fn trigger_shield_attack_bbb(
     if *state == PlayerState::Stand && *prev == ShieldPreviousAttack::BB {
       if mouse_input.just_pressed(MouseButton::Right) {
         if soul.cost(30) {
-          *state = PlayerState::ShieldAttackBB;
+          *state = PlayerState::ShieldAttackBBB;
           commands.entity(entity)
             .remove::<ShieldPreviousAttack>()
             .remove::<RemovalCoolDown<ShieldPreviousAttack>>()
