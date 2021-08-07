@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{consts::{AppState, PLAYER_MOVE_SPEED}, game::GameSystemStage};
+use crate::{consts::{AppState, PLAYER_MOVE_SPEED}, game::stages::PhysicalStage};
 
 use super::entity::{Controlling, Position, Velocity};
 
@@ -40,17 +40,14 @@ pub struct MovementPlugin;
 impl Plugin for MovementPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_system_set(
+      .add_system_set_to_stage(
+        PhysicalStage::UpdateVelocity,
         SystemSet::on_update(AppState::InGame)
-          .label(GameSystemStage::UpdateVelocity)
-          .before(GameSystemStage::UpdatePosition)
           .with_system(update_controlling_velocity)
       )
-      .add_system_set(
+      .add_system_set_to_stage(
+        PhysicalStage::UpdatePosition,
         SystemSet::on_update(AppState::InGame)
-          .label(GameSystemStage::UpdatePosition)
-          .before(GameSystemStage::CreateDamage)
-          .after(GameSystemStage::UpdateVelocity)
           .with_system(update_position)
       );
   }

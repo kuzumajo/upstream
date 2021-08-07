@@ -1,6 +1,6 @@
-use bevy::{prelude::*, render::RenderStage};
+use bevy::prelude::*;
 
-use crate::{consts::AppState, game::{GameSystemStage, engine::entity::{Player, Position, Velocity}, system_label::GameSpriteStage}};
+use crate::{consts::AppState, game::{engine::entity::{Player, Position, Velocity}, stages::SpritingStage}};
 
 struct PlayerSprites {
   stand: Handle<TextureAtlas>,
@@ -69,11 +69,9 @@ impl Plugin for PlayerSpritingPlugin {
   fn build(&self, app: &mut App) {
     app
       .init_resource::<PlayerSprites>()
-      .add_system_set(
+      .add_system_set_to_stage(
+        SpritingStage::ChangeHandle,
         SystemSet::on_update(AppState::InGame)
-          .label(GameSpriteStage::ChangeHandle)
-          .label(GameSystemStage::Finish)
-          .after(GameSystemStage::CheckDead)
           .with_system(change_player_sprite)
           .with_system(sync_player_sprite)
       );

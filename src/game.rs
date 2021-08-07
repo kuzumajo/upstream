@@ -2,7 +2,7 @@ use bevy::{app::PluginGroupBuilder, prelude::*};
 
 mod control_panel;
 mod game_saves;
-mod system_label;
+mod stages;
 
 mod engine;
 mod sprite;
@@ -13,7 +13,7 @@ use game_saves::GameSavePlugin;
 // use player_attack::PlayerAttackPlugin;
 
 pub use game_saves::AutoSaveSlot;
-pub use system_label::GameSystemStage;
+pub use stages::RegisterStagesPlugin;
 
 /// Whole game logics and UI performances
 pub struct GameBasicPlugins;
@@ -21,6 +21,7 @@ pub struct GameBasicPlugins;
 impl PluginGroup for GameBasicPlugins {
   fn build(&mut self, app: &mut PluginGroupBuilder) {
     app
+      .add(RegisterStagesPlugin)
       .add(ControlPanelPlugin)
       .add(GameSavePlugin);
   }

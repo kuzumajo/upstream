@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{consts::AppState, game::GameSystemStage};
+use crate::{consts::AppState, game::stages::AttackStage};
 
 use super::{attack::{AttackArea, AttackDamage, GroupAttack}, entity::{CollideRadius, Position, Velocity}};
 
@@ -54,10 +54,9 @@ pub struct ProjectilePlugin;
 
 impl Plugin for ProjectilePlugin {
   fn build(&self, app: &mut App) {
-    app.add_system_set(
+    app.add_system_set_to_stage(
+      AttackStage::CreateDamage,
       SystemSet::on_update(AppState::InGame)
-        .label(GameSystemStage::CreateDamage)
-        .after(GameSystemStage::UpdatePosition)
         .with_system(bullet_collision)
     );
   }

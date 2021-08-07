@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{consts::AppState, game::GameSystemStage};
+use crate::{consts::AppState, game::stages::AttackStage};
 
 pub struct Health(pub u32);
 
@@ -56,22 +56,19 @@ pub struct HealthPlugin;
 impl Plugin for HealthPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_system_set(
+      .add_system_set_to_stage(
+        AttackStage::RecieveDamagePost,
         SystemSet::on_update(AppState::InGame)
-          .label(GameSystemStage::CheckDead)
-          .after(GameSystemStage::PostDamage)
-          .with_system(update_health_death)
-      )
-      .add_system_set(
-        SystemSet::on_update(AppState::InGame)
-          .label(GameSystemStage::PostDamage)
-          .after(GameSystemStage::RecieveDamage)
           .with_system(update_lock_health)
       )
-      .add_system_set(
+      .add_system_set_to_stage(
+        AttackStage::ClearDeadPre,
         SystemSet::on_update(AppState::InGame)
-          .label(GameSystemStage::ClearDead)
-          .after(GameSystemStage::CheckDead)
+          .with_system(update_health_death)
+      )
+      .add_system_set_to_stage(
+        AttackStage::ClearDead,
+        SystemSet::on_update(AppState::InGame)
           .with_system(remove_dead_entity)
       );
   }

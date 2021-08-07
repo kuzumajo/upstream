@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{consts::AppState, game::system_label::GameSpriteStage};
+use crate::{consts::AppState, game::stages::SpritingStage};
 
 /// control animate interval
 pub struct SpriteAnimateTimer(pub Timer);
@@ -28,10 +28,9 @@ pub struct SpriteAnimationPlugin;
 impl Plugin for SpriteAnimationPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_system_set(
+      .add_system_set_to_stage(
+        SpritingStage::AnimateSprite,
         SystemSet::on_update(AppState::InGame)
-          .label(GameSpriteStage::AnimateSprite)
-          .after(GameSpriteStage::ChangeHandle)
           .with_system(sprite_animation)
       );
   }

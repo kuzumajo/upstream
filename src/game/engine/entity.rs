@@ -1,7 +1,5 @@
 use bevy::prelude::*;
 
-use crate::{consts::AppState, game::GameSystemStage};
-
 /// Indentify player
 pub struct Player;
 

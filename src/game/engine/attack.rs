@@ -2,7 +2,7 @@ use std::{collections::BTreeSet, iter::FromIterator};
 
 use bevy::prelude::*;
 
-use crate::{consts::AppState, game::GameSystemStage};
+use crate::{consts::AppState, game::stages::AttackStage};
 
 use super::{entity::{CollideRadius, Position}, health::Health};
 
@@ -158,16 +158,14 @@ impl Plugin for AttackPlugin {
     app
       .insert_resource::<Vec<GroupAttack>>(Vec::new())
       .insert_resource::<Vec<SingleAttack>>(Vec::new())
-      .add_system_set(
+      .add_system_set_to_stage(
+        AttackStage::ProcessDamage,
         SystemSet::on_update(AppState::InGame)
-          .label(GameSystemStage::ProcessDamage)
-          .after(GameSystemStage::CreateDamage)
           .with_system(process_damage)
       )
-      .add_system_set(
+      .add_system_set_to_stage(
+        AttackStage::RecieveDamage,
         SystemSet::on_update(AppState::InGame)
-          .label(GameSystemStage::RecieveDamage)
-          .after(GameSystemStage::ProcessDamage)
           .with_system(recieve_damage)
       );
   }

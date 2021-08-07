@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{consts::AppState, game::GameSystemStage};
+use crate::{consts::AppState, game::stages::{AttackStage, GameEngineStage}};
 
 use super::{attack::{AttackArea, AttackDamage, GroupAttack}, cooldown::{AttackCoolDown, RemovalCoolDown, update_removal_cool_down}, entity::{CollideRadius, Controlling, PlayerState, Position, Velocity}, projectile::{BulletProps, ProjectileBundle}, soul::SoulPower};
 
@@ -338,15 +338,14 @@ pub struct ShieldPlugin;
 impl Plugin for ShieldPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_system_set(
+      .add_system_set_to_stage(
+        GameEngineStage::CoolDown,
         SystemSet::on_update(AppState::InGame)
-          .label(GameSystemStage::CoolDown)
           .with_system(update_removal_cool_down::<ShieldPreviousAttack>)
       )
-      .add_system_set(
+      .add_system_set_to_stage(
+        AttackStage::TriggerNormalAttack,
         SystemSet::on_update(AppState::InGame)
-          .label(GameSystemStage::NormalAttack)
-          .after(GameSystemStage::SpecialAttack)
           .with_system(trigger_shield_attack_a)
           .with_system(trigger_shield_attack_aa)
           .with_system(trigger_shield_attack_ab)
@@ -354,10 +353,9 @@ impl Plugin for ShieldPlugin {
           .with_system(trigger_shield_attack_bb)
           .with_system(trigger_shield_attack_bbb)
       )
-      .add_system_set(
+      .add_system_set_to_stage(
+        AttackStage::CreateDamage,
         SystemSet::on_update(AppState::InGame)
-          .label(GameSystemStage::CreateDamage)
-          .after(GameSystemStage::NormalAttack)
           .with_system(perform_shield_attack_a)
           .with_system(perform_shield_attack_aa)
           .with_system(perform_shield_attack_ab)
