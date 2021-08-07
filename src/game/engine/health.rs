@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{consts::AppState, game::stages::AttackStage};
+use crate::{consts::AppState, game::stages::{AttackLabel, GameEngineLabel}};
 
 pub struct Health(pub u32);
 
@@ -28,7 +28,7 @@ fn update_lock_health(
 }
 
 /// Mark entity Dead if its health is 0
-fn update_health_death(
+fn mark_health_0_as_dead(
   mut commands: Commands,
   query: Query<(Entity, &Health)>,
 ) {
@@ -56,19 +56,28 @@ pub struct HealthPlugin;
 impl Plugin for HealthPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_system_set_to_stage(
-        AttackStage::RecieveDamagePost,
+      .add_system_set(
         SystemSet::on_update(AppState::InGame)
+          .label(GameEngineLabel::UpdateAttacks)
+          .after(GameEngineLabel::UpdatePhysics)
+          .before(AttackLabel::CheckDead)
+          .after(AttackLabel::RecieveDamage)
           .with_system(update_lock_health)
       )
-      .add_system_set_to_stage(
-        AttackStage::ClearDeadPre,
+      .add_system_set(
         SystemSet::on_update(AppState::InGame)
-          .with_system(update_health_death)
+          .label(GameEngineLabel::UpdateAttacks)
+          .after(GameEngineLabel::UpdatePhysics)
+          .label(AttackLabel::CheckDead)
+          .after(AttackLabel::RecieveDamage)
+          .with_system(mark_health_0_as_dead)
       )
-      .add_system_set_to_stage(
-        AttackStage::ClearDead,
+      .add_system_set(
         SystemSet::on_update(AppState::InGame)
+          .label(GameEngineLabel::UpdateAttacks)
+          .after(GameEngineLabel::UpdatePhysics)
+          .label(AttackLabel::RemoveDead)
+          .after(AttackLabel::CheckDead)
           .with_system(remove_dead_entity)
       );
   }

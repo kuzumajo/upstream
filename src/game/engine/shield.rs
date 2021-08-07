@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{consts::AppState, game::stages::{AttackStage, GameEngineStage}};
+use crate::{consts::AppState, game::{entity::projectile::{ProjectileBundle}, sprite::SpriteAnimateTimer, stages::{AttackLabel, GameEngineLabel, TriggerAttackLabel}}};
 
-use super::{attack::{AttackArea, AttackDamage, GroupAttack}, cooldown::{AttackCoolDown, RemovalCoolDown, update_removal_cool_down}, entity::{CollideRadius, Controlling, PlayerState, Position, Velocity}, projectile::{BulletProps, ProjectileBundle}, soul::SoulPower};
+use super::{attack::{AttackArea, AttackDamage, GroupAttack}, cooldown::{AttackCoolDown, RemovalCoolDown, update_removal_cool_down}, entity::{CollideRadius, Controlling, PlayerState, Position, Velocity}, projectile::BulletProps, soul::SoulPower};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum ShieldPreviousAttack {
@@ -168,9 +168,9 @@ fn perform_shield_attack_a(
   mut commands: Commands,
   time: Res<Time>,
   mut attack: ResMut<Vec<GroupAttack>>,
-  mut query: Query<(Entity, &Position, &mut ShieldAttackA)>,
+  mut query: Query<(Entity, &Position, &mut ShieldAttackA, &mut PlayerState)>,
 ) {
-  if let Ok((entity, position, mut atk)) = query.single_mut() {
+  if let Ok((entity, position, mut atk, mut state)) = query.single_mut() {
     if atk.0.tick(time.delta()).just_finished() {
       commands.entity(entity)
         .remove::<ShieldAttackA>();
@@ -187,8 +187,10 @@ fn perform_shield_attack_a(
           damage: 30,
           power: 2,
         },
-        from: entity,
+        from: Some(entity),
       });
+
+      *state = PlayerState::Stand;
     }
   }
 }
@@ -197,9 +199,9 @@ fn perform_shield_attack_aa(
   mut commands: Commands,
   time: Res<Time>,
   mut attack: ResMut<Vec<GroupAttack>>,
-  mut query: Query<(Entity, &Position, &mut ShieldAttackAA)>,
+  mut query: Query<(Entity, &Position, &mut ShieldAttackAA, &mut PlayerState)>,
 ) {
-  if let Ok((entity, position, mut atk)) = query.single_mut() {
+  if let Ok((entity, position, mut atk, mut state)) = query.single_mut() {
     if atk.0.tick(time.delta()).just_finished() {
       commands.entity(entity)
         .remove::<ShieldAttackAA>();
@@ -216,8 +218,10 @@ fn perform_shield_attack_aa(
           damage: 40,
           power: 2,
         },
-        from: entity,
+        from: Some(entity),
       });
+
+      *state = PlayerState::Stand;
     }
   }
 }
@@ -226,9 +230,9 @@ fn perform_shield_attack_ab(
   mut commands: Commands,
   time: Res<Time>,
   mut attack: ResMut<Vec<GroupAttack>>,
-  mut query: Query<(Entity, &Position, &mut ShieldAttackAB)>,
+  mut query: Query<(Entity, &Position, &mut ShieldAttackAB, &mut PlayerState)>,
 ) {
-  if let Ok((entity, position, mut atk)) = query.single_mut() {
+  if let Ok((entity, position, mut atk, mut state)) = query.single_mut() {
     if atk.0.tick(time.delta()).just_finished() {
       commands.entity(entity)
         .remove::<ShieldAttackAB>();
@@ -246,8 +250,10 @@ fn perform_shield_attack_ab(
           damage: 40,
           power: 2,
         },
-        from: entity,
+        from: Some(entity),
       });
+
+      *state = PlayerState::Stand;
     }
   }
 }
@@ -255,9 +261,9 @@ fn perform_shield_attack_ab(
 fn perform_shield_attack_b(
   mut commands: Commands,
   time: Res<Time>,
-  mut query: Query<(Entity, &Position, &mut ShieldAttackB)>,
+  mut query: Query<(Entity, &Position, &mut ShieldAttackB, &mut PlayerState)>,
 ) {
-  if let Ok((entity, position, mut atk)) = query.single_mut() {
+  if let Ok((entity, position, mut atk, mut state)) = query.single_mut() {
     if atk.0.tick(time.delta()).just_finished() {
       commands.entity(entity)
         .remove::<ShieldAttackB>();
@@ -267,14 +273,17 @@ fn perform_shield_attack_b(
         // FIXME: correct direction
         velocity: Velocity(Vec2::X * 1800.0),
         bullet: BulletProps {
-          owner: entity,
-          damage: AttackDamage::Physical {
+          owner: Some(entity),
+          damage: Some(AttackDamage::Physical {
             damage: 20,
             power: 1,
-          }
+          })
         },
         radius: CollideRadius(30.0),
+        ..Default::default()
       });
+
+      *state = PlayerState::Stand;
     }
   }
 }
@@ -282,9 +291,9 @@ fn perform_shield_attack_b(
 fn perform_shield_attack_bb(
   mut commands: Commands,
   time: Res<Time>,
-  mut query: Query<(Entity, &Position, &mut ShieldAttackBB)>,
+  mut query: Query<(Entity, &Position, &mut ShieldAttackBB, &mut PlayerState)>,
 ) {
-  if let Ok((entity, position, mut atk)) = query.single_mut() {
+  if let Ok((entity, position, mut atk, mut state)) = query.single_mut() {
     if atk.0.tick(time.delta()).just_finished() {
       commands.entity(entity)
         .remove::<ShieldAttackBB>();
@@ -294,14 +303,17 @@ fn perform_shield_attack_bb(
         // FIXME: correct direction
         velocity: Velocity(Vec2::X * 1800.0),
         bullet: BulletProps {
-          owner: entity,
-          damage: AttackDamage::Physical {
+          owner: Some(entity),
+          damage: Some(AttackDamage::Physical {
             damage: 20,
             power: 1,
-          }
+          })
         },
         radius: CollideRadius(30.0),
+        ..Default::default()
       });
+
+      *state = PlayerState::Stand;
     }
   }
 }
@@ -309,9 +321,9 @@ fn perform_shield_attack_bb(
 fn perform_shield_attack_bbb(
   mut commands: Commands,
   time: Res<Time>,
-  mut query: Query<(Entity, &Position, &mut ShieldAttackBBB)>,
+  mut query: Query<(Entity, &Position, &mut ShieldAttackBBB, &mut PlayerState)>,
 ) {
-  if let Ok((entity, position, mut atk)) = query.single_mut() {
+  if let Ok((entity, position, mut atk, mut state)) = query.single_mut() {
     if atk.0.tick(time.delta()).just_finished() {
       commands.entity(entity)
         .remove::<ShieldAttackBBB>();
@@ -321,14 +333,17 @@ fn perform_shield_attack_bbb(
         // FIXME: correct direction
         velocity: Velocity(Vec2::X * 1800.0),
         bullet: BulletProps {
-          owner: entity,
-          damage: AttackDamage::Physical {
+          owner: Some(entity),
+          damage: Some(AttackDamage::Physical {
             damage: 35,
             power: 2,
-          }
+          })
         },
         radius: CollideRadius(30.0),
+        ..Default::default()
       });
+
+      *state = PlayerState::Stand;
     }
   }
 }
@@ -338,14 +353,18 @@ pub struct ShieldPlugin;
 impl Plugin for ShieldPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_system_set_to_stage(
-        GameEngineStage::CoolDown,
+      .add_system_set(
         SystemSet::on_update(AppState::InGame)
+          .label(GameEngineLabel::CoolDown)
           .with_system(update_removal_cool_down::<ShieldPreviousAttack>)
       )
-      .add_system_set_to_stage(
-        AttackStage::TriggerNormalAttack,
+      .add_system_set(
         SystemSet::on_update(AppState::InGame)
+          .label(GameEngineLabel::UpdateAttacks)
+          .after(GameEngineLabel::UpdatePhysics)
+          .label(AttackLabel::TriggerAttack)
+          .label(TriggerAttackLabel::TriggerNormalAttack)
+          .after(TriggerAttackLabel::TriggerSpecialAttack)
           .with_system(trigger_shield_attack_a)
           .with_system(trigger_shield_attack_aa)
           .with_system(trigger_shield_attack_ab)
@@ -353,9 +372,12 @@ impl Plugin for ShieldPlugin {
           .with_system(trigger_shield_attack_bb)
           .with_system(trigger_shield_attack_bbb)
       )
-      .add_system_set_to_stage(
-        AttackStage::CreateDamage,
+      .add_system_set(
         SystemSet::on_update(AppState::InGame)
+          .label(GameEngineLabel::UpdateAttacks)
+          .after(GameEngineLabel::UpdatePhysics)
+          .label(AttackLabel::PerformAttack)
+          .after(AttackLabel::TriggerAttack)
           .with_system(perform_shield_attack_a)
           .with_system(perform_shield_attack_aa)
           .with_system(perform_shield_attack_ab)

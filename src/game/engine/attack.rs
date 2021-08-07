@@ -2,23 +2,26 @@ use std::{collections::BTreeSet, iter::FromIterator};
 
 use bevy::prelude::*;
 
-use crate::{consts::AppState, game::stages::AttackStage};
+use crate::{consts::AppState, game::stages::{AttackLabel, GameEngineLabel}};
 
 use super::{entity::{CollideRadius, Position}, health::Health};
 
+#[derive(Debug)]
 pub struct GroupAttack {
   pub area: AttackArea,
   pub entities: Vec<Entity>,
   pub damage: AttackDamage,
-  pub from: Entity,
+  pub from: Option<Entity>,
 }
 
+#[derive(Debug)]
 pub struct SingleAttack {
   pub entity: Entity,
   pub damage: AttackDamage,
-  pub from: Entity,
+  pub from: Option<Entity>,
 }
 
+#[derive(Debug)]
 pub enum AttackArea {
   /// Circle
   /// 
@@ -75,7 +78,7 @@ pub enum AttackArea {
   }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum AttackDamage {
   Physical {
     damage: u32,
@@ -89,17 +92,20 @@ pub enum AttackDamage {
 
 /// convert group attack to single attack
 fn process_damage(
-  mut group_attacks: ResMut<Vec<GroupAttack>>,
+  mut attacks: ResMut<Vec<GroupAttack>>,
   mut single_attacks: ResMut<Vec<SingleAttack>>,
   query: Query<(Entity, &Position, &CollideRadius)>,
 ) {
-  for attack in group_attacks.iter() {
+  for attack in attacks.iter() {
     let mut set: BTreeSet<Entity> = BTreeSet::from_iter(attack.entities.clone().into_iter());
+
+    // XXX: debug here
+    println!("{:?}", attack);
 
     for (entity, position, radius) in query.iter() {
 
       // damage doesn't hurt self
-      if entity == attack.from {
+      if attack.from.is_some() && attack.from == Some(entity) {
         continue;
       }
 
@@ -127,7 +133,7 @@ fn process_damage(
     }
   }
 
-  group_attacks.clear();
+  attacks.clear();
 }
 
 /// perform damage to targeted entity
@@ -158,14 +164,20 @@ impl Plugin for AttackPlugin {
     app
       .insert_resource::<Vec<GroupAttack>>(Vec::new())
       .insert_resource::<Vec<SingleAttack>>(Vec::new())
-      .add_system_set_to_stage(
-        AttackStage::ProcessDamage,
+      .add_system_set(
         SystemSet::on_update(AppState::InGame)
+          .label(GameEngineLabel::UpdateAttacks)
+          .after(GameEngineLabel::UpdatePhysics)
+          .label(AttackLabel::ProcessDamage)
+          .after(AttackLabel::PerformAttack)
           .with_system(process_damage)
       )
-      .add_system_set_to_stage(
-        AttackStage::RecieveDamage,
+      .add_system_set(
         SystemSet::on_update(AppState::InGame)
+          .label(GameEngineLabel::UpdateAttacks)
+          .after(GameEngineLabel::UpdatePhysics)
+          .label(AttackLabel::RecieveDamage)
+          .after(AttackLabel::ProcessDamage)
           .with_system(recieve_damage)
       );
   }

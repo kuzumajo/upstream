@@ -1,20 +1,13 @@
 use bevy::prelude::*;
 
-use crate::{consts::AppState, game::stages::AttackStage};
+use crate::{consts::AppState, game::{stages::{AttackLabel, GameEngineLabel}}};
 
-use super::{attack::{AttackArea, AttackDamage, GroupAttack}, entity::{CollideRadius, Position, Velocity}};
+use super::{attack::{AttackArea, AttackDamage, GroupAttack}, entity::{CollideRadius, Position}};
 
+#[derive(Default)]
 pub struct BulletProps {
-  pub owner: Entity,
-  pub damage: AttackDamage,
-}
-
-#[derive(Bundle)]
-pub struct ProjectileBundle {
-  pub position: Position,
-  pub velocity: Velocity,
-  pub bullet: BulletProps,
-  pub radius: CollideRadius,
+  pub owner: Option<Entity>,
+  pub damage: Option<AttackDamage>,
 }
 
 fn bullet_collision(
@@ -25,7 +18,7 @@ fn bullet_collision(
 ) {
   for (entity1, position1, radius1, props) in query.iter() {
     for (entity2, position2, radius2) in obj_query.iter() {
-      if entity2 == entity1 || entity2 == props.owner {
+      if entity2 == entity1 || (props.owner.is_some() && props.owner == Some(entity2)) {
         continue;
       }
 
@@ -34,15 +27,17 @@ fn bullet_collision(
 
         commands.entity(entity1).despawn();
 
-        attack.push(GroupAttack {
-          area: AttackArea::Circle {
-            o: position1.0,
-            r: radius1.0,
-          },
-          entities: Vec::new(),
-          damage: props.damage,
-          from: props.owner,
-        });
+        if let Some(damage) = props.damage {
+          attack.push(GroupAttack {
+            area: AttackArea::Circle {
+              o: position1.0,
+              r: radius1.0,
+            },
+            entities: Vec::new(),
+            damage,
+            from: props.owner,
+          });
+        }
 
         break;
       }
@@ -54,9 +49,12 @@ pub struct ProjectilePlugin;
 
 impl Plugin for ProjectilePlugin {
   fn build(&self, app: &mut App) {
-    app.add_system_set_to_stage(
-      AttackStage::CreateDamage,
+    app.add_system_set(
       SystemSet::on_update(AppState::InGame)
+        .label(GameEngineLabel::UpdateAttacks)
+        .after(GameEngineLabel::UpdatePhysics)
+        .label(AttackLabel::PerformAttack)
+        .after(AttackLabel::TriggerAttack)
         .with_system(bullet_collision)
     );
   }

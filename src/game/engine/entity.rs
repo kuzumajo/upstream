@@ -29,3 +29,9 @@ pub enum PlayerState {
   Assault,
   Stand,
 }
+
+impl Default for PlayerState {
+  fn default() -> Self {
+    Self::Stand
+  }
+}

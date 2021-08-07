@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use bevy::{ecs::component::Component, prelude::*};
 
-use crate::{consts::AppState, game::stages::GameEngineStage};
+use crate::{consts::AppState, game::stages::GameEngineLabel};
 
 /// disable entity attack action
 pub struct AttackCoolDown;
@@ -37,9 +37,9 @@ pub struct CoolDownPlugin;
 impl Plugin for CoolDownPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_system_set_to_stage(
-        GameEngineStage::CoolDown,
+      .add_system_set(
         SystemSet::on_update(AppState::InGame)
+          .label(GameEngineLabel::CoolDown)
           .with_system(update_removal_cool_down::<AttackCoolDown>)
           .with_system(update_removal_cool_down::<AssaultCoolDown>)
       );

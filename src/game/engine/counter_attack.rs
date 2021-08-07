@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{consts::AppState, game::{engine::entity::Controlling, stages::AttackStage}};
+use crate::{consts::AppState, game::{engine::entity::Controlling, stages::{AttackLabel, GameEngineLabel, TriggerAttackLabel}}};
 
 use super::{attack::{AttackArea, AttackDamage, GroupAttack}, cooldown::{AttackCoolDown, RemovalCoolDown}, entity::Position};
 
@@ -36,7 +36,7 @@ fn trigger_counter_attack(
           damage: 50,
           power: 2,
         },
-        from: entity,
+        from: Some(entity),
       });
     }
   }
@@ -47,9 +47,12 @@ pub struct CounterAttackPlugin;
 impl Plugin for CounterAttackPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_system_set_to_stage(
-        AttackStage::TriggerSpecialAttack,
+      .add_system_set(
         SystemSet::on_update(AppState::InGame)
+          .label(GameEngineLabel::UpdateAttacks)
+          .after(GameEngineLabel::UpdatePhysics)
+          .label(AttackLabel::TriggerAttack)
+          .label(TriggerAttackLabel::TriggerSpecialAttack)
           .with_system(trigger_counter_attack)
       );
   }

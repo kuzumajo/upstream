@@ -13,7 +13,6 @@ use game_saves::GameSavePlugin;
 // use player_attack::PlayerAttackPlugin;
 
 pub use game_saves::AutoSaveSlot;
-pub use stages::RegisterStagesPlugin;
 
 /// Whole game logics and UI performances
 pub struct GameBasicPlugins;
@@ -21,7 +20,6 @@ pub struct GameBasicPlugins;
 impl PluginGroup for GameBasicPlugins {
   fn build(&mut self, app: &mut PluginGroupBuilder) {
     app
-      .add(RegisterStagesPlugin)
       .add(ControlPanelPlugin)
       .add(GameSavePlugin);
   }
