@@ -25,7 +25,7 @@ impl Default for PlayerBundle {
       velocity: Velocity(Vec2::ZERO),
       position: Position(Vec2::ZERO),
       health: Health(200),
-      soulpower: SoulPower(200, 200),
+      soulpower: SoulPower(20000, 20000),
 
       player: Player,
       player_state: PlayerState::default(),

@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 
-use crate::{consts::AppState, game::{engine::{entity::Position, projectile::BulletProps}, stages::{GameEngineLabel, SpriteLabel}}};
+use crate::{game::{engine::{entity::Position, projectile::BulletProps}, stages::SpriteLabel}};
 
 struct BulletSprites {
-  sprite: Handle<TextureAtlas>,
+  flying: Handle<TextureAtlas>,
 }
 
 impl FromWorld for BulletSprites {
@@ -13,13 +13,14 @@ impl FromWorld for BulletSprites {
     let asset_server = cell.get_resource::<AssetServer>().unwrap();
 
     BulletSprites {
-      sprite: texture_atlases.add(
+      flying: texture_atlases.add(
         TextureAtlas::from_grid(
           asset_server.load("images/item/bullet/bullet.png"),
           Vec2::new(20.0, 20.0),
           3,
           1,
-        )),
+        )
+      ),
     }
   }
 }
@@ -29,7 +30,7 @@ fn change_bullet_sprite(
   mut query: Query<&mut Handle<TextureAtlas>, Changed<BulletProps>>
 ) {
   for mut handle in query.iter_mut() {
-    *handle = sprites.sprite.clone();
+    *handle = sprites.flying.clone();
   }
 }
 
@@ -51,14 +52,19 @@ impl Plugin for BulletSpritingPlugin {
   fn build(&self, app: &mut App) {
     app
       .init_resource::<BulletSprites>()
-      .add_system_set(
-        SystemSet::on_update(AppState::InGame)
-          .label(GameEngineLabel::UpdateSprites)
-          .after(GameEngineLabel::UpdateAttacks)
+      .add_system_set_to_stage(
+        CoreStage::PostUpdate,
+        SystemSet::new()
           .label(SpriteLabel::UpdateSpriteSheet)
           .with_system(change_bullet_sprite)
       )
-      .add_system_to_stage(CoreStage::PostUpdate, sync_bullet_sprite);
+      .add_system_set_to_stage(
+        CoreStage::PostUpdate,
+        SystemSet::new()
+          .label(SpriteLabel::SpriteAnimation)
+          .after(SpriteLabel::UpdateSpriteSheet)
+          .with_system(sync_bullet_sprite)
+      );
   }
 }
 

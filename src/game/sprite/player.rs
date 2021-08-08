@@ -1,10 +1,16 @@
 use bevy::prelude::*;
 
-use crate::{consts::AppState, game::{engine::entity::{Player, Position, Velocity}, stages::{GameEngineLabel, SpriteLabel}}};
+use crate::{game::{engine::entity::{Player, PlayerState, Position, Velocity}, stages::SpriteLabel}};
 
 struct PlayerSprites {
   stand: Handle<TextureAtlas>,
   walk: Handle<TextureAtlas>,
+  attack_a: Handle<TextureAtlas>,
+  attack_aa: Handle<TextureAtlas>,
+  attack_ab: Handle<TextureAtlas>,
+  attack_b: Handle<TextureAtlas>,
+  attack_bb: Handle<TextureAtlas>,
+  attack_bbb: Handle<TextureAtlas>,
 }
 
 impl FromWorld for PlayerSprites {
@@ -20,28 +26,87 @@ impl FromWorld for PlayerSprites {
           Vec2::new(28.0, 30.0),
           1,
           1,
-        )),
+        )
+      ),
       walk: texture_atlases.add(
         TextureAtlas::from_grid(
           asset_server.load("images/char/shuku/shuku-walk.png"),
           Vec2::new(28.0, 30.0),
           2,
           1,
-        )),
+        )
+      ),
+      attack_a: texture_atlases.add(
+        TextureAtlas::from_grid(
+          asset_server.load("images/char/shuku/shuku-attack-a.png"),
+          Vec2::new(28.0, 30.0),
+          3,
+          1,
+        )
+      ),
+      attack_aa: texture_atlases.add(
+        TextureAtlas::from_grid(
+          asset_server.load("images/char/shuku/shuku-attack-aa.png"),
+          Vec2::new(28.0, 30.0),
+          5,
+          1,
+        )
+      ),
+      attack_ab: texture_atlases.add(
+        TextureAtlas::from_grid(
+          asset_server.load("images/char/shuku/shuku-attack-ab.png"),
+          Vec2::new(28.0, 30.0),
+          2,
+          1,
+        )
+      ),
+      attack_b: texture_atlases.add(
+        TextureAtlas::from_grid(
+          asset_server.load("images/char/shuku/shuku-attack-b.png"),
+          Vec2::new(28.0, 30.0),
+          3,
+          1,
+        )
+      ),
+      attack_bb: texture_atlases.add(
+        TextureAtlas::from_grid(
+          asset_server.load("images/char/shuku/shuku-attack-bb.png"),
+          Vec2::new(28.0, 30.0),
+          3,
+          1,
+        )
+      ),
+      attack_bbb: texture_atlases.add(
+        TextureAtlas::from_grid(
+          asset_server.load("images/char/shuku/shuku-attack-bbb.png"),
+          Vec2::new(28.0, 30.0),
+          5,
+          1,
+        )
+      ),
     }
   }
 }
 
 fn change_player_sprite(
   sprites: Res<PlayerSprites>,
-  mut query: Query<(&mut Handle<TextureAtlas>, &mut TextureAtlasSprite, &Velocity), (With<Player>, Changed<Velocity>)>
+  mut query: Query<(&mut Handle<TextureAtlas>, &mut TextureAtlasSprite, &Velocity, &PlayerState), (With<Player>, Or<(Changed<Velocity>, Changed<PlayerState>)>)>
 ) {
-  for (mut handle, mut sprite, velocity) in query.iter_mut() {
+  for (mut handle, mut sprite, velocity, state) in query.iter_mut() {
     // TODO: here is alot of more animations needed
-    let new_texture = if velocity.0 == Vec2::ZERO {
-      &sprites.stand
-    } else {
-      &sprites.walk
+    let new_texture = match state {
+      &PlayerState::Stand => if velocity.0 == Vec2::ZERO {
+        &sprites.stand
+      } else {
+        &sprites.walk
+      }
+      &PlayerState::ShieldAttackA   => &sprites.attack_a,
+      &PlayerState::ShieldAttackAA  => &sprites.attack_aa,
+      &PlayerState::ShieldAttackAB  => &sprites.attack_ab,
+      &PlayerState::ShieldAttackB   => &sprites.attack_b,
+      &PlayerState::ShieldAttackBB  => &sprites.attack_bb,
+      &PlayerState::ShieldAttackBBB => &sprites.attack_bbb,
+      _ => &sprites.walk,
     };
 
     if *handle != *new_texture {
@@ -75,13 +140,18 @@ impl Plugin for PlayerSpritingPlugin {
   fn build(&self, app: &mut App) {
     app
       .init_resource::<PlayerSprites>()
-      .add_system_set(
-        SystemSet::on_update(AppState::InGame)
-          .label(GameEngineLabel::UpdateSprites)
-          .after(GameEngineLabel::UpdateAttacks)
+      .add_system_set_to_stage(
+        CoreStage::PostUpdate,
+        SystemSet::new()
           .label(SpriteLabel::UpdateSpriteSheet)
           .with_system(change_player_sprite)
       )
-      .add_system_to_stage(CoreStage::PostUpdate, sync_player_sprite);
+      .add_system_set_to_stage(
+        CoreStage::PostUpdate,
+        SystemSet::new()
+          .label(SpriteLabel::SpriteAnimation)
+          .after(SpriteLabel::UpdateSpriteSheet)
+          .with_system(sync_player_sprite)
+      );
   }
 }

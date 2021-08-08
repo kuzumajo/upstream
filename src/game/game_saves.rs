@@ -24,7 +24,7 @@ fn enter_game(
     )));
   }
 
-  // FIXME: debug
+  // XXX: debug
   commands.spawn_bundle(PlayerBundle::default()).insert(Controlling);
 }
 

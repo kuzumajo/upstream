@@ -8,8 +8,6 @@ pub enum GameEngineLabel {
   UpdatePhysics,
   /// update attacks
   UpdateAttacks,
-  /// update sprites
-  UpdateSprites,
 }
 
 #[derive(Debug, Hash, Clone, Eq, PartialEq, SystemLabel)]
