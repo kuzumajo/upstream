@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{consts::{AppState, PLAYER_SHIELD_BULLET_SPEED}, game::{entity::projectile::{ProjectileBundle}, sprite::SpriteAnimateTimer, stages::{AttackLabel, GameEngineLabel, TriggerAttackLabel}}};
+use crate::{consts::{AppState, PLAYER_SHIELD_BULLET_SPEED}, game::{entity::projectile::{ProjectileBundle}, stages::{AttackLabel, GameEngineLabel, TriggerAttackLabel}}};
 
 use super::{attack::{AttackArea, AttackDamage, GroupAttack}, cooldown::{AttackCoolDown, RemovalCoolDown, update_removal_cool_down}, entity::{CollideRadius, Controlling, PlayerState, Position, Velocity}, projectile::BulletProps, soul::SoulPower};
 

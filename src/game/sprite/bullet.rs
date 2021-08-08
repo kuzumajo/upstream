@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{consts::AppState, game::{engine::{entity::{Player, Position, Velocity}, projectile::BulletProps}, stages::{GameEngineLabel, SpriteLabel}}};
+use crate::{consts::AppState, game::{engine::{entity::Position, projectile::BulletProps}, stages::{GameEngineLabel, SpriteLabel}}};
 
 struct BulletSprites {
   sprite: Handle<TextureAtlas>,
@@ -57,7 +57,8 @@ impl Plugin for BulletSpritingPlugin {
           .after(GameEngineLabel::UpdateAttacks)
           .label(SpriteLabel::UpdateSpriteSheet)
           .with_system(change_bullet_sprite)
-          .with_system(sync_bullet_sprite)
-      );
+      )
+      .add_system_to_stage(CoreStage::PostUpdate, sync_bullet_sprite);
   }
 }
+

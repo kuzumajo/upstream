@@ -81,7 +81,7 @@ impl Plugin for PlayerSpritingPlugin {
           .after(GameEngineLabel::UpdateAttacks)
           .label(SpriteLabel::UpdateSpriteSheet)
           .with_system(change_player_sprite)
-          .with_system(sync_player_sprite)
-      );
+      )
+      .add_system_to_stage(CoreStage::PostUpdate, sync_player_sprite);
   }
 }
