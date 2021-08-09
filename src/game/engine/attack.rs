@@ -2,7 +2,7 @@ use std::{collections::BTreeSet, iter::FromIterator};
 
 use bevy::prelude::*;
 
-use crate::{consts::AppState, game::stages::{AttackLabel, GameEngineLabel}};
+use crate::{consts::AppState, game::{entity::attack::{AttackBundle, AttackSpriteType}, sprite::sprite::{SpriteRotation, SpriteScale}, stages::{AttackLabel, GameEngineLabel}}};
 
 use super::{entity::{CollideRadius, Position}, health::Health};
 
@@ -92,6 +92,7 @@ pub enum AttackDamage {
 
 /// convert group attack to single attack
 fn process_damage(
+  mut commands: Commands,
   mut attacks: ResMut<Vec<GroupAttack>>,
   mut single_attacks: ResMut<Vec<SingleAttack>>,
   query: Query<(Entity, &Position, &CollideRadius)>,
@@ -101,6 +102,38 @@ fn process_damage(
 
     // XXX: debug here
     println!("{:?}", attack);
+
+    // insert effects
+    match &attack.area {
+      &AttackArea::HalfCircle { o, r, v } => {
+        commands.spawn_bundle(AttackBundle {
+          position: Position(o),
+          // TODO: use atan2 is not very well...
+          rotation: SpriteRotation(Quat::from_rotation_z(v.y.atan2(v.x))),
+          scale: SpriteScale(Vec3::new(r / 25.0, r / 25.0, 1.0)),
+          area: AttackSpriteType::HalfCircle,
+          ..Default::default()
+        });
+      }
+      &AttackArea::Circle { o, r } => {
+        commands.spawn_bundle(AttackBundle {
+          position: Position(o),
+          scale: SpriteScale(Vec3::new(r / 25.0, r / 25.0, 1.0)),
+          area: AttackSpriteType::Circle,
+          ..Default::default()
+        });
+      }
+      &AttackArea::Rectangle { o, w, h, v } => {
+        commands.spawn_bundle(AttackBundle {
+          position: Position(o + v * w / 2.0),
+          // TODO: use atan2 is not very well...
+          rotation: SpriteRotation(Quat::from_rotation_z(v.y.atan2(v.x))),
+          scale: SpriteScale(Vec3::new(w / 100.0, h / 25.0, 1.0)),
+          area: AttackSpriteType::Rectangle,
+          ..Default::default()
+        });
+      }
+    }
 
     for (entity, position, radius) in query.iter() {
 

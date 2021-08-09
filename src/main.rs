@@ -3,7 +3,9 @@
 #[macro_use]
 extern crate magic_crypt;
 
+use bevy::window::WindowResized;
 use bevy::{prelude::*, render::pass::ClearColor};
+use game::GameCamera;
 
 mod config;
 mod consts;
@@ -31,7 +33,7 @@ use crate::staff::StaffPlugin;
 use crate::text_input::TextInputPlugin;
 
 fn insert_camera(mut commands: Commands) {
-  commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+  commands.spawn_bundle(OrthographicCameraBundle::new_2d()).insert(GameCamera);
   commands.spawn_bundle(UiCameraBundle::default());
 }
 
@@ -57,6 +59,18 @@ fn update_mouse_position(mut events: EventReader<CursorMoved>, mut res: ResMut<M
   }
 }
 
+pub struct WindowSize {
+  pub width: f32,
+  pub height: f32,
+}
+
+fn update_window_size(mut events: EventReader<WindowResized>, mut res: ResMut<WindowSize>) {
+  for event in events.iter() {
+    res.width = event.width;
+    res.height = event.height;
+  }
+}
+
 /// @see <https://github.com/bevyengine/bevy/issues/1135>
 fn issue_1135_system(mut query: Query<(&Node, &mut Visible), With<Text>>) {
   for (node, mut visible) in query.iter_mut() {
@@ -70,14 +84,20 @@ fn issue_1135_system(mut query: Query<(&Node, &mut Visible), With<Text>>) {
 
 fn main() {
   let game_config = GameConfig::load();
+  let window_descriptor = game_config.get_window_descriptor();
 
   App::new()
     .insert_resource(ClearColor(Color::rgb(0.9, 0.9, 0.9)))
-    .insert_resource(game_config.get_window_descriptor())
-    .insert_resource(game_config)
     .insert_resource(Crypto::new(CRYPTO_KEY))
     .insert_resource(MousePosition(Vec2::ZERO))
-    .add_system(update_mouse_position)
+    .insert_resource(WindowSize {
+      width: window_descriptor.width,
+      height: window_descriptor.height
+    })
+    .insert_resource(window_descriptor)
+    .insert_resource(game_config)
+    .add_system_to_stage(CoreStage::PreUpdate, update_mouse_position)
+    .add_system_to_stage(CoreStage::PreUpdate, update_window_size)
     .add_system(issue_1135_system)
     .add_plugins(DefaultPlugins)
     .init_resource::<FontAssets>()

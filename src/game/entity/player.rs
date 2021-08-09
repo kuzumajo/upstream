@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::game::{engine::{entity::{Player, PlayerState, Position, Velocity}, health::Health, soul::SoulPower}, sprite::SpriteAnimateTimer};
+use crate::game::{engine::{entity::{Player, PlayerState, Position, Velocity}, health::Health, soul::SoulPower}, sprite::sprite::SpriteAnimateTimer};
 
 #[derive(Bundle)]
 pub struct PlayerBundle {

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{consts::{AppState, PLAYER_SHIELD_BULLET_SPEED}, game::{entity::projectile::{ProjectileBundle}, stages::{AttackLabel, GameEngineLabel, TriggerAttackLabel}}};
+use crate::{consts::{AppState, PLAYER_SHIELD_BULLET_SPEED}, game::{MouseDirection, entity::projectile::{ProjectileBundle}, stages::{AttackLabel, GameEngineLabel, TriggerAttackLabel}}};
 
 use super::{attack::{AttackArea, AttackDamage, GroupAttack}, cooldown::{AttackCoolDown, RemovalCoolDown, update_removal_cool_down}, entity::{CollideRadius, Controlling, PlayerState, Position, Velocity}, projectile::BulletProps, soul::SoulPower};
 
@@ -167,6 +167,7 @@ fn trigger_shield_attack_bbb(
 fn perform_shield_attack_a(
   mut commands: Commands,
   time: Res<Time>,
+  direction: Res<MouseDirection>,
   mut attack: ResMut<Vec<GroupAttack>>,
   mut query: Query<(Entity, &Position, &mut ShieldAttackA, &mut PlayerState)>,
 ) {
@@ -179,8 +180,7 @@ fn perform_shield_attack_a(
         area: AttackArea::HalfCircle {
           o: position.0,
           r: 150.0,
-          // FIXME: find direction here
-          v: Vec2::X,
+          v: direction.0,
         },
         entities: Vec::new(),
         damage: AttackDamage::Physical {
@@ -198,6 +198,7 @@ fn perform_shield_attack_a(
 fn perform_shield_attack_aa(
   mut commands: Commands,
   time: Res<Time>,
+  direction: Res<MouseDirection>,
   mut attack: ResMut<Vec<GroupAttack>>,
   mut query: Query<(Entity, &Position, &mut ShieldAttackAA, &mut PlayerState)>,
 ) {
@@ -210,8 +211,7 @@ fn perform_shield_attack_aa(
         area: AttackArea::HalfCircle {
           o: position.0,
           r: 150.0,
-          // FIXME: find direction here
-          v: Vec2::X,
+          v: direction.0,
         },
         entities: Vec::new(),
         damage: AttackDamage::Physical {
@@ -229,6 +229,7 @@ fn perform_shield_attack_aa(
 fn perform_shield_attack_ab(
   mut commands: Commands,
   time: Res<Time>,
+  direction: Res<MouseDirection>,
   mut attack: ResMut<Vec<GroupAttack>>,
   mut query: Query<(Entity, &Position, &mut ShieldAttackAB, &mut PlayerState)>,
 ) {
@@ -242,8 +243,7 @@ fn perform_shield_attack_ab(
           o: position.0,
           w: 250.0,
           h: 110.0,
-          // FIXME: find direction here
-          v: Vec2::X,
+          v: direction.0,
         },
         entities: Vec::new(),
         damage: AttackDamage::Physical {
@@ -261,6 +261,7 @@ fn perform_shield_attack_ab(
 fn perform_shield_attack_b(
   mut commands: Commands,
   time: Res<Time>,
+  direction: Res<MouseDirection>,
   mut query: Query<(Entity, &Position, &mut ShieldAttackB, &mut PlayerState)>,
 ) {
   if let Ok((entity, position, mut atk, mut state)) = query.single_mut() {
@@ -270,8 +271,7 @@ fn perform_shield_attack_b(
 
       commands.spawn_bundle(ProjectileBundle {
         position: position.clone(),
-        // FIXME: correct direction
-        velocity: Velocity(Vec2::X * PLAYER_SHIELD_BULLET_SPEED),
+        velocity: Velocity(direction.0 * PLAYER_SHIELD_BULLET_SPEED),
         bullet: BulletProps {
           owner: Some(entity),
           damage: Some(AttackDamage::Physical {
@@ -291,6 +291,7 @@ fn perform_shield_attack_b(
 fn perform_shield_attack_bb(
   mut commands: Commands,
   time: Res<Time>,
+  direction: Res<MouseDirection>,
   mut query: Query<(Entity, &Position, &mut ShieldAttackBB, &mut PlayerState)>,
 ) {
   if let Ok((entity, position, mut atk, mut state)) = query.single_mut() {
@@ -300,8 +301,7 @@ fn perform_shield_attack_bb(
 
       commands.spawn_bundle(ProjectileBundle {
         position: position.clone(),
-        // FIXME: correct direction
-        velocity: Velocity(Vec2::X * PLAYER_SHIELD_BULLET_SPEED),
+        velocity: Velocity(direction.0 * PLAYER_SHIELD_BULLET_SPEED),
         bullet: BulletProps {
           owner: Some(entity),
           damage: Some(AttackDamage::Physical {
@@ -321,6 +321,7 @@ fn perform_shield_attack_bb(
 fn perform_shield_attack_bbb(
   mut commands: Commands,
   time: Res<Time>,
+  direction: Res<MouseDirection>,
   mut query: Query<(Entity, &Position, &mut ShieldAttackBBB, &mut PlayerState)>,
 ) {
   if let Ok((entity, position, mut atk, mut state)) = query.single_mut() {
@@ -330,8 +331,7 @@ fn perform_shield_attack_bbb(
 
       commands.spawn_bundle(ProjectileBundle {
         position: position.clone(),
-        // FIXME: correct direction
-        velocity: Velocity(Vec2::X * PLAYER_SHIELD_BULLET_SPEED),
+        velocity: Velocity(direction.0 * PLAYER_SHIELD_BULLET_SPEED),
         bullet: BulletProps {
           owner: Some(entity),
           damage: Some(AttackDamage::Physical {

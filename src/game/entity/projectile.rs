@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::game::{engine::{entity::{CollideRadius, Position, Velocity}, projectile::BulletProps}, sprite::SpriteAnimateTimer};
+use crate::game::{engine::{entity::{CollideRadius, Position, Velocity}, projectile::BulletProps}, sprite::sprite::SpriteAnimateTimer};
 
 
 #[derive(Bundle)]

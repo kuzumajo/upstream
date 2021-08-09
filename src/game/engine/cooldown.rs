@@ -32,6 +32,18 @@ pub fn update_removal_cool_down<T: Component>(
   }
 }
 
+fn update_removal_entity_cool_down(
+  mut commands: Commands,
+  time: Res<Time>,
+  mut query: Query<(Entity, &mut RemovalCoolDown<Entity>)>,
+) {
+  for (entity, mut cooldown) in query.iter_mut() {
+    if cooldown.0.tick(time.delta()).just_finished() {
+      commands.entity(entity).despawn();
+    }
+  }
+}
+
 pub struct CoolDownPlugin;
 
 impl Plugin for CoolDownPlugin {
@@ -42,6 +54,7 @@ impl Plugin for CoolDownPlugin {
           .label(GameEngineLabel::CoolDown)
           .with_system(update_removal_cool_down::<AttackCoolDown>)
           .with_system(update_removal_cool_down::<AssaultCoolDown>)
+          .with_system(update_removal_entity_cool_down)
       );
   }
 }

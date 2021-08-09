@@ -130,7 +130,7 @@ fn sync_player_sprite(
     transform.translation.y = position.0.y;
     // FIXME: z-index fix
     // now if z < 0 it disappears
-    // transform.translation.z = position.0.y;
+    transform.translation.z = 1.0;
   }
 }
 
