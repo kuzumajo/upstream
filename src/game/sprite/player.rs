@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{game::{engine::entity::{Player, PlayerState, Position, Velocity}, stages::SpriteLabel}};
+use crate::{game::{MouseDirection, engine::entity::{Player, PlayerState, Position, Velocity}, stages::SpriteLabel}};
 
 struct PlayerSprites {
   stand: Handle<TextureAtlas>,
@@ -111,12 +111,18 @@ fn change_player_sprite(
 
     if *handle != *new_texture {
       *handle = new_texture.clone();
-      sprite.index = 0;
     }
+  }
+}
 
-    if velocity.0.x > 0.0 {
+fn change_player_sprite_direction(
+  direction: Res<MouseDirection>,
+  mut query: Query<&mut TextureAtlasSprite, With<Player>>,
+) {
+  for mut sprite in query.iter_mut() {
+    if direction.0.x > 0.0 {
       sprite.flip_x = true;
-    } else if velocity.0.x < 0.0 {
+    } else if direction.0.x < 0.0 {
       sprite.flip_x = false;
     }
   }
@@ -145,6 +151,7 @@ impl Plugin for PlayerSpritingPlugin {
         SystemSet::new()
           .label(SpriteLabel::UpdateSpriteSheet)
           .with_system(change_player_sprite)
+          .with_system(change_player_sprite_direction)
       )
       .add_system_set_to_stage(
         CoreStage::PostUpdate,

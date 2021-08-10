@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::game::{engine::{entity::{CollideRadius, Position, Velocity}, projectile::BulletProps}, sprite::sprite::SpriteAnimateTimer};
+use crate::game::{engine::{entity::{CollideRadius, Position, Velocity}, projectile::BulletProps}, sprite::sprite::{SpriteAnimateTimer, SpriteRotation, SpriteScale}};
 
 
 #[derive(Bundle)]
@@ -14,6 +14,8 @@ pub struct ProjectileBundle {
   #[bundle]
   pub sprite: SpriteSheetBundle,
   pub timer: SpriteAnimateTimer,
+  pub rotation: SpriteRotation,
+  pub scale: SpriteScale,
 }
 
 impl Default for ProjectileBundle {
@@ -26,6 +28,8 @@ impl Default for ProjectileBundle {
 
       sprite: SpriteSheetBundle::default(),
       timer: SpriteAnimateTimer(Timer::from_seconds(0.1, true)),
+      rotation: SpriteRotation(Quat::default()),
+      scale: SpriteScale::default(),
     }
   }
 }

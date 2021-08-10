@@ -23,6 +23,15 @@ fn sprite_sheet_next_frame(
   }
 }
 
+fn sprite_replay_when_handle_changed(
+  mut query: Query<(&mut SpriteAnimateTimer, &mut TextureAtlasSprite), Changed<Handle<TextureAtlas>>>,
+) {
+  for (mut timer, mut sprite) in query.iter_mut() {
+    timer.0.reset();
+    sprite.index = 0;
+  }
+}
+
 pub struct SpriteRotation(pub Quat);
 
 fn sprite_sync_rotation(
@@ -59,7 +68,8 @@ impl Plugin for SpriteAnimationPlugin {
         SystemSet::new()
           .label(SpriteLabel::SpriteAnimation)
           .after(SpriteLabel::UpdateSpriteSheet)
-          .with_system(sprite_sheet_next_frame)
+          .with_system(sprite_replay_when_handle_changed.label("reset"))
+          .with_system(sprite_sheet_next_frame.after("reset"))
           .with_system(sprite_sync_rotation)
           .with_system(sprite_sync_scale)
       );

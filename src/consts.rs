@@ -40,6 +40,7 @@ pub const PLAYER_MOVE_SPEED: f32 = 200.0;
 pub const PLAYER_SHIELD_BULLET_SPEED: f32 = 1800.0;
 
 pub const CAMERA_SYNC_SPEED: f32 = 0.05;
+pub const CAMERA_FOLLOW_TIMESTEP: f64 = 1.0 / 60.0;
 
 // crypto
 
