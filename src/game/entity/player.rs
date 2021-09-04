@@ -35,7 +35,7 @@ impl Default for PlayerBundle {
       player_state: PlayerState::default(),
 
       sprite: SpriteSheetBundle::default(),
-      timer: SpriteAnimateTimer(Timer::from_seconds(0.1, true)),
+      timer: SpriteAnimateTimer::default(),
       rotation: SpriteRotation(Quat::default()),
       scale: SpriteScale(Vec3::new(100.0 / 30.0, 100.0 / 30.0, 1.0)),
     }

@@ -39,7 +39,7 @@ impl Default for AttackBundle {
       area: AttackSpriteType::default(),
 
       sprite: SpriteSheetBundle::default(),
-      timer: SpriteAnimateTimer(Timer::from_seconds(0.1, true)),
+      timer: SpriteAnimateTimer::default(),
       rotation: SpriteRotation(Quat::default()),
       scale: SpriteScale::default(),
     }

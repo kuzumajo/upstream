@@ -5,6 +5,12 @@ use crate::game::stages::SpriteLabel;
 /// control animate interval
 pub struct SpriteAnimateTimer(pub Timer);
 
+impl Default for SpriteAnimateTimer {
+  fn default() -> Self {
+    Self(Timer::from_seconds(0.1, true))
+  }
+}
+
 fn sprite_sheet_next_frame(
   assets: Res<Assets<TextureAtlas>>,
   time: Res<Time>,
