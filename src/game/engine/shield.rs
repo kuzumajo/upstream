@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{consts::{AppState, PLAYER_SHIELD_BULLET_SPEED}, game::{MouseDirection, entity::projectile::{ProjectileBundle}, sprite::sprite::SpriteScale, stages::{AttackLabel, GameEngineLabel, TriggerAttackLabel}}};
+use crate::{consts::{AppState, PLAYER_SHIELD_BULLET_SPEED}, game::{MouseDirection, entity::projectile::ProjectileBundle, sprite::sprite::SpriteScale, stages::AttackPriority}};
 
 use super::{attack::{AttackArea, AttackDamage, GroupAttack}, cooldown::{AttackCoolDown, RemovalCoolDown, update_removal_cool_down}, entity::{CollideRadius, Controlling, PlayerState, Position, Velocity}, projectile::BulletProps, soul::SoulPower};
 
@@ -358,16 +358,11 @@ impl Plugin for ShieldPlugin {
     app
       .add_system_set(
         SystemSet::on_update(AppState::InGame)
-          .label(GameEngineLabel::CoolDown)
           .with_system(update_removal_cool_down::<ShieldPreviousAttack>)
       )
       .add_system_set(
         SystemSet::on_update(AppState::InGame)
-          .label(GameEngineLabel::UpdateAttacks)
-          .after(GameEngineLabel::UpdatePhysics)
-          .label(AttackLabel::TriggerAttack)
-          .label(TriggerAttackLabel::TriggerNormalAttack)
-          .after(TriggerAttackLabel::TriggerSpecialAttack)
+          .label(AttackPriority::Normal)
           .with_system(trigger_shield_attack_a)
           .with_system(trigger_shield_attack_aa)
           .with_system(trigger_shield_attack_ab)
@@ -377,10 +372,6 @@ impl Plugin for ShieldPlugin {
       )
       .add_system_set(
         SystemSet::on_update(AppState::InGame)
-          .label(GameEngineLabel::UpdateAttacks)
-          .after(GameEngineLabel::UpdatePhysics)
-          .label(AttackLabel::PerformAttack)
-          .after(AttackLabel::TriggerAttack)
           .with_system(perform_shield_attack_a)
           .with_system(perform_shield_attack_aa)
           .with_system(perform_shield_attack_ab)

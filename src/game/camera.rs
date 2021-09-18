@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{MousePosition, WindowSize, consts::{AppState, CAMERA_SYNC_SPEED}};
 
-use super::{engine::entity::{Player, Position}, stages::GameEngineLabel};
+use super::engine::entity::{Player, Position};
 
 pub struct GameCamera;
 
@@ -51,7 +51,6 @@ impl Plugin for CameraPlugin {
       .add_system_to_stage(CoreStage::PreUpdate, update_mouse_direction)
       .add_system_set(
         SystemSet::on_update(AppState::InGame)
-          .after(GameEngineLabel::UpdatePhysics)
           .with_system(sync_camera_with_player)
       );
   }

@@ -2,9 +2,9 @@ use std::{collections::BTreeSet, iter::FromIterator};
 
 use bevy::prelude::*;
 
-use crate::{consts::AppState, game::{entity::attack::{AttackBundle, AttackSpriteType}, sprite::sprite::{SpriteRotation, SpriteScale}, stages::{AttackLabel, GameEngineLabel}}};
+use crate::{consts::AppState, game::{entity::attack::{AttackBundle, AttackSpriteType}, sprite::sprite::{SpriteRotation, SpriteScale}}};
 
-use super::{entity::{CollideRadius, Position}, health::Health};
+use super::{entity::{CollideRadius, Position}, health::{Health, LockHealth}};
 
 #[derive(Debug)]
 pub struct GroupAttack {
@@ -42,11 +42,12 @@ pub enum AttackArea {
   /// Half circle
   /// 
   /// ```
-  /// |`-.
-  /// |   `.
-  /// o--r-|  v ---> 
-  /// |   .`
-  /// |.-`
+  ///  _
+  /// | ``.
+  /// |    `.
+  /// o---r-|  v ---> 
+  /// |    .`
+  /// |_.-`
   /// ```
   HalfCircle {
     /// center
@@ -91,13 +92,13 @@ pub enum AttackDamage {
 }
 
 /// convert group attack to single attack
-fn process_damage(
+fn flat_group_damage(
   mut commands: Commands,
-  mut attacks: ResMut<Vec<GroupAttack>>,
+  mut group_attacks: ResMut<Vec<GroupAttack>>,
   mut single_attacks: ResMut<Vec<SingleAttack>>,
   query: Query<(Entity, &Position, &CollideRadius)>,
 ) {
-  for attack in attacks.iter() {
+  for attack in group_attacks.iter() {
     let mut set: BTreeSet<Entity> = BTreeSet::from_iter(attack.entities.clone().into_iter());
 
     // XXX: debug here
@@ -138,7 +139,7 @@ fn process_damage(
     for (entity, position, radius) in query.iter() {
 
       // damage doesn't hurt self
-      if attack.from.is_some() && attack.from == Some(entity) {
+      if attack.from == Some(entity) {
         continue;
       }
 
@@ -166,22 +167,28 @@ fn process_damage(
     }
   }
 
-  attacks.clear();
+  group_attacks.clear();
 }
 
 /// perform damage to targeted entity
 fn recieve_damage(
   mut attacks: ResMut<Vec<SingleAttack>>,
-  mut query: Query<&mut Health>,
+  mut query: Query<(&mut Health, Option<&LockHealth>)>,
 ) {
   for attack in attacks.iter() {
-    if let Ok(mut health) = query.get_mut(attack.entity) {
+    if let Ok((mut health, lock_health)) = query.get_mut(attack.entity) {
 
       // FIXME: very original
-      health.recieve_damage(match attack.damage {
+      let damage = match attack.damage {
         AttackDamage::Physical { damage, .. } => damage,
         AttackDamage::Magical { damage } => damage,
-      });
+      };
+
+      if lock_health.is_some() {
+        health.recieve_damage_locked(damage);
+      } else {
+        health.recieve_damage(damage);
+      }
 
       // TODO: play repellent here
     }
@@ -199,18 +206,7 @@ impl Plugin for AttackPlugin {
       .insert_resource::<Vec<SingleAttack>>(Vec::new())
       .add_system_set(
         SystemSet::on_update(AppState::InGame)
-          .label(GameEngineLabel::UpdateAttacks)
-          .after(GameEngineLabel::UpdatePhysics)
-          .label(AttackLabel::ProcessDamage)
-          .after(AttackLabel::PerformAttack)
-          .with_system(process_damage)
-      )
-      .add_system_set(
-        SystemSet::on_update(AppState::InGame)
-          .label(GameEngineLabel::UpdateAttacks)
-          .after(GameEngineLabel::UpdatePhysics)
-          .label(AttackLabel::RecieveDamage)
-          .after(AttackLabel::ProcessDamage)
+          .with_system(flat_group_damage)
           .with_system(recieve_damage)
       );
   }

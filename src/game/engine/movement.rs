@@ -1,9 +1,10 @@
 use bevy::prelude::*;
 
-use crate::{consts::{AppState, PLAYER_MOVE_SPEED}, game::stages::{GameEngineLabel, PhysicsLabel}};
+use crate::{consts::{AppState, PLAYER_MOVE_SPEED}, game::stages::PhysicsLabel};
 
 use super::entity::{Controlling, Position, Velocity};
 
+/// update entity's velocity which has Controlling tag
 fn update_controlling_velocity(
   keycode_input: Res<Input<KeyCode>>,
   mut query: Query<&mut Velocity, With<Controlling>>
@@ -24,12 +25,15 @@ fn update_controlling_velocity(
     }
     let v = direction.normalize_or_zero() * PLAYER_MOVE_SPEED;
     
+    // in order to trigger Changed<Velocity> correctly.
     if velocity.0 != v {
       velocity.0 = v;
     }
   }
 }
 
+/// update entity's position according to its velocity
+/// TODO: collision detect
 fn update_position(
   time: Res<Time>,
   mut query: Query<(&Velocity, &mut Position)>,
@@ -48,15 +52,11 @@ impl Plugin for MovementPlugin {
     app
       .add_system_set(
         SystemSet::on_update(AppState::InGame)
-          .label(GameEngineLabel::UpdatePhysics)
-          .after(GameEngineLabel::CoolDown)
           .label(PhysicsLabel::UpdateVelocity)
           .with_system(update_controlling_velocity)
       )
       .add_system_set(
         SystemSet::on_update(AppState::InGame)
-          .label(GameEngineLabel::UpdatePhysics)
-          .after(GameEngineLabel::CoolDown)
           .label(PhysicsLabel::UpdatePosition)
           .after(PhysicsLabel::UpdateVelocity)
           .with_system(update_position)

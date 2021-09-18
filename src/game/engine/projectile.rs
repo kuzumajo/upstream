@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{consts::AppState, game::{stages::{AttackLabel, GameEngineLabel}}};
+use crate::consts::AppState;
 
 use super::{attack::{AttackArea, AttackDamage, GroupAttack}, entity::{CollideRadius, Position}};
 
@@ -10,6 +10,9 @@ pub struct BulletProps {
   pub damage: Option<AttackDamage>,
 }
 
+/// if bullets collides with other entity (with another owner),
+/// then destory itself and perform attack to the specific entity
+/// or the whole area.
 fn bullet_collision(
   mut commands: Commands,
   mut attack: ResMut<Vec<GroupAttack>>,
@@ -51,10 +54,6 @@ impl Plugin for ProjectilePlugin {
   fn build(&self, app: &mut App) {
     app.add_system_set(
       SystemSet::on_update(AppState::InGame)
-        .label(GameEngineLabel::UpdateAttacks)
-        .after(GameEngineLabel::UpdatePhysics)
-        .label(AttackLabel::PerformAttack)
-        .after(AttackLabel::TriggerAttack)
         .with_system(bullet_collision)
     );
   }
