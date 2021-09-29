@@ -3,11 +3,16 @@ use crate::FontAssets;
 use bevy::prelude::*;
 use bevy::window::ReceivedCharacter;
 
+/// Used to indentify entities in this page.
 struct TextInputUI;
+
+/// Used to indentify inputting text entity in this page.
 struct TextInputTextUI;
 
+/// Used to return results from the text input.
 pub struct TextInputText(pub String);
 
+/// setup the input page.
 fn setup_text_input(
   mut commands: Commands,
   font_assets: Res<FontAssets>,
@@ -31,6 +36,7 @@ fn setup_text_input(
       ..Default::default()
     })
     .insert(TextInputUI);
+
   commands
     .spawn_bundle(Text2dBundle {
       text: Text::with_section(
@@ -50,11 +56,13 @@ fn setup_text_input(
     })
     .insert(TextInputTextUI)
     .insert(TextInputUI);
+
   if option.is_none() {
     commands.insert_resource(TextInputText("".to_string()));
   }
 }
 
+/// Listen user input and update TextInputText.
 fn input_text(
   mut text: ResMut<TextInputText>,
   mut char_input_events: EventReader<ReceivedCharacter>,
@@ -76,7 +84,11 @@ fn input_text(
   }
 }
 
-fn update_text(input: Res<TextInputText>, mut query: Query<&mut Text, With<TextInputTextUI>>) {
+/// Sync TextInputTextUI with TextInputText.
+fn update_text(
+  input: Res<TextInputText>,
+  mut query: Query<&mut Text, With<TextInputTextUI>>
+) {
   for mut text in query.iter_mut() {
     if input.0.is_empty() {
       text.sections[0].value = "...".to_string();
@@ -86,6 +98,7 @@ fn update_text(input: Res<TextInputText>, mut query: Query<&mut Text, With<TextI
   }
 }
 
+/// exit input page.
 fn exit_on_esc(
   mut commands: Commands,
   input: Res<Input<KeyCode>>,
@@ -97,19 +110,22 @@ fn exit_on_esc(
   }
 }
 
+/// destroy the input page.
 fn destroy_text_input(mut commands: Commands, query: Query<Entity, With<TextInputUI>>) {
   for entity in query.iter() {
     commands.entity(entity).despawn_recursive();
   }
 }
 
+/// Text input page.
 pub struct TextInputPlugin;
 
 impl Plugin for TextInputPlugin {
   fn build(&self, app: &mut App) {
     app
       .add_system_set(
-        SystemSet::on_enter(AppState::TextInput).with_system(setup_text_input),
+        SystemSet::on_enter(AppState::TextInput)
+          .with_system(setup_text_input),
       )
       .add_system_set(
         SystemSet::on_update(AppState::TextInput)
@@ -118,7 +134,8 @@ impl Plugin for TextInputPlugin {
           .with_system(exit_on_esc),
       )
       .add_system_set(
-        SystemSet::on_exit(AppState::TextInput).with_system(destroy_text_input),
+        SystemSet::on_exit(AppState::TextInput)
+          .with_system(destroy_text_input),
       );
   }
 }

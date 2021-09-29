@@ -4,7 +4,9 @@ use crate::saves::GameSave;
 use bevy::prelude::*;
 
 use super::engine::entity::Controlling;
+use super::entity::monster::MonsterBundle;
 use super::entity::player::PlayerBundle;
+use super::sprite::health::HealthBar;
 
 pub struct AutoSaveSlot(pub u8);
 
@@ -26,6 +28,7 @@ fn enter_game(
 
   // XXX: debug
   commands.spawn_bundle(PlayerBundle::default()).insert(Controlling);
+  commands.spawn_bundle(MonsterBundle::default()).insert(HealthBar);
 }
 
 fn update_auto_save(

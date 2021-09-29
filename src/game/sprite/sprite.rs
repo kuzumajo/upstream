@@ -48,19 +48,25 @@ fn sprite_sync_rotation(
   }
 }
 
-pub struct SpriteScale(pub Vec3);
+pub struct SpriteSize(pub Vec2);
 
-impl Default for SpriteScale {
+impl Default for SpriteSize {
   fn default() -> Self {
-    Self(Vec3::splat(1.0))
+    Self(Vec2::splat(1.0))
   }
 }
 
-fn sprite_sync_scale(
-  mut query: Query<(&SpriteScale, &mut Transform), Changed<SpriteScale>>,
+fn sprite_sync_size(
+  materials: Res<Assets<TextureAtlas>>,
+  mut query: Query<(&SpriteSize, &mut Transform, &Handle<TextureAtlas>)>,
 ) {
-  for (scale, mut transform) in query.iter_mut() {
-    transform.scale = scale.0;
+  for (size, mut transform, handle) in query.iter_mut() {
+    if let Some(material) = materials.get(handle) {
+      if let Some(rect) = material.textures.get(0) {
+        let texture_size = rect.max - rect.min;
+        transform.scale = Vec3::new(size.0.x / texture_size.x, size.0.y / texture_size.y, 1.0);
+      }
+    }
   }
 }
 
@@ -77,7 +83,7 @@ impl Plugin for SpriteAnimationPlugin {
           .with_system(sprite_replay_when_handle_changed.label("reset"))
           .with_system(sprite_sheet_next_frame.after("reset"))
           .with_system(sprite_sync_rotation)
-          .with_system(sprite_sync_scale)
+          .with_system(sprite_sync_size)
       );
   }
 }

@@ -3,6 +3,12 @@ use bevy::prelude::*;
 /// Indentify player
 pub struct Player;
 
+/// Indentity monster
+pub struct Monster;
+
+/// Indentify NPC
+pub struct NPC;
+
 /// entity which is under control
 pub struct Controlling;
 

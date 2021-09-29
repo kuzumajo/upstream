@@ -6,10 +6,16 @@ use bevy::prelude::*;
 mod list;
 use list::*;
 
+/// Used to indentify UI entities in this page
 struct StaffUI;
+
+/// Used to indentify scrolling entities in this page
 struct StaffScroll;
+
+/// Used wait some seconds before starting scrolling staff list
 struct StartScrollTimer(Timer);
 
+/// Setup staff page
 fn setup_staff(mut commands: Commands, font_assets: Res<FontAssets>) {
   // full list
   let mut total_y = -98.0;
@@ -54,6 +60,7 @@ fn setup_staff(mut commands: Commands, font_assets: Res<FontAssets>) {
   )));
 }
 
+/// make list scroll
 fn scroll_staff_list(
   time: Res<Time>,
   mut timer: ResMut<StartScrollTimer>,
@@ -66,30 +73,39 @@ fn scroll_staff_list(
   }
 }
 
+/// exit staff page
 fn esc_to_exit(keyevent: Res<Input<KeyCode>>, mut state: ResMut<State<AppState>>) {
   if keyevent.pressed(KeyCode::Escape) {
     state.replace(AppState::Menu).unwrap();
   }
 }
 
-fn exit_staff(mut commands: Commands, query: Query<Entity, With<StaffUI>>) {
+/// destory staff page
+fn destory_staff(mut commands: Commands, query: Query<Entity, With<StaffUI>>) {
   for entity in query.iter() {
     commands.entity(entity).despawn_recursive();
   }
   commands.remove_resource::<StartScrollTimer>();
 }
 
+/// staff page
 pub struct StaffPlugin;
 
 impl Plugin for StaffPlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_system_set(SystemSet::on_enter(AppState::Staff).with_system(setup_staff))
+      .add_system_set(
+        SystemSet::on_enter(AppState::Staff)
+          .with_system(setup_staff)
+      )
       .add_system_set(
         SystemSet::on_update(AppState::Staff)
           .with_system(scroll_staff_list)
           .with_system(esc_to_exit),
       )
-      .add_system_set(SystemSet::on_exit(AppState::Staff).with_system(exit_staff));
+      .add_system_set(
+        SystemSet::on_exit(AppState::Staff)
+          .with_system(destory_staff)
+      );
   }
 }

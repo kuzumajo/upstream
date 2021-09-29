@@ -6,8 +6,13 @@ use crate::MousePosition;
 use bevy::prelude::*;
 use bevy::ui::FocusPolicy;
 
+/// Used to indentify entities in this page
 struct SettingsUI;
-struct SettingsButtonUI;
+
+/// Used to indentify button entities in this page
+struct NavButtonUI;
+
+/// Used materials for the settings page
 struct SettingsMaterials {
   button_pressed: Handle<ColorMaterial>,
   button_normal: Handle<ColorMaterial>,
@@ -29,14 +34,25 @@ struct SettingsMaterials {
   transparent: Handle<ColorMaterial>,
 }
 
+/// Used to indentify string button entities in this page
 struct SettingStringButton;
+
+/// Used to indentify radio button entities in this page
 struct SettingRadioButton;
+
+/// Used to indentify slider entities in this page
 struct SettingSlideButton;
+
+/// Used to indentify slider button entities in this page
 struct SettingSlideMovingButton;
+
+/// Used to indentify select button entities in this page
 struct SettingSelectButton;
 
+/// Used to track dragging of the slider
 struct SettingDraggingSlide(Entity);
 
+/// Initialize materials
 impl FromWorld for SettingsMaterials {
   fn from_world(world: &mut World) -> Self {
     let world_cell = world.cell();
@@ -69,17 +85,20 @@ impl FromWorld for SettingsMaterials {
 }
 
 #[derive(Clone)]
+/// Setting Type
 pub enum SettingType {
+  /// A simple string
   String(String),
+  /// A ratio button
   Ratio(bool),
-  /// [0.0, 1.0]
+  /// A slider which ranged from 0.0 to 1.0
   Slide(f32),
-  /// (selected, total)
-  /// 0 <= selected < total
+  /// A select button which has a list of options and a selected option
   Select(usize, Vec<String>),
 }
 
 #[derive(Clone)]
+/// Different setting items
 pub enum SettingItem {
   Volume,
   VolumeMusic,
@@ -94,12 +113,17 @@ pub enum SettingItem {
   MouseSensitivity,
 }
 
-enum SettingsNavButton {
+/// Navigation buttons
+enum NavButton {
+  /// Go to the previous page
   Back,
+  /// Apply changes
   Apply,
+  /// Reset changes
   Reset,
 }
 
+/// Setup settings page
 fn setup_settings(
   mut commands: Commands,
   materials: Res<SettingsMaterials>,
@@ -165,8 +189,8 @@ fn setup_settings(
                 ..Default::default()
               });
             })
-            .insert(SettingsNavButton::Back)
-            .insert(SettingsButtonUI);
+            .insert(NavButton::Back)
+            .insert(NavButtonUI);
 
           // apply button
           parent
@@ -181,8 +205,8 @@ fn setup_settings(
                 ..Default::default()
               });
             })
-            .insert(SettingsNavButton::Apply)
-            .insert(SettingsButtonUI);
+            .insert(NavButton::Apply)
+            .insert(NavButtonUI);
 
           // reset button
           parent
@@ -197,8 +221,8 @@ fn setup_settings(
                 ..Default::default()
               });
             })
-            .insert(SettingsNavButton::Reset)
-            .insert(SettingsButtonUI);
+            .insert(NavButton::Reset)
+            .insert(NavButtonUI);
         });
 
       // right <div>
@@ -437,11 +461,12 @@ fn setup_settings(
     });
 }
 
-fn button_material_change(
+/// listen mouse events and update hovered/clicked material change to navigation buttons
+fn nav_button_material_change(
   materials: Res<SettingsMaterials>,
   mut query: Query<
     (&Interaction, &mut Handle<ColorMaterial>),
-    (Changed<Interaction>, With<SettingsButtonUI>),
+    (Changed<Interaction>, With<NavButtonUI>),
   >,
 ) {
   for (interaction, mut material) in query.iter_mut() {
@@ -453,11 +478,12 @@ fn button_material_change(
   }
 }
 
+/// listen click events to navigations buttons
 fn nav_button_clicked(
   mut commands: Commands,
   mut state: ResMut<State<AppState>>,
   mut config: ResMut<GameConfig>,
-  query: Query<(&Interaction, &SettingsNavButton), (Changed<Interaction>, With<SettingsButtonUI>)>,
+  query: Query<(&Interaction, &NavButton), (Changed<Interaction>, With<NavButtonUI>)>,
   mut query_set: QuerySet<(
     Query<(&SettingItem, &SettingType)>,
     Query<(&SettingItem, &mut SettingType)>,
@@ -466,10 +492,10 @@ fn nav_button_clicked(
   for (interaction, button) in query.iter() {
     match *interaction {
       Interaction::Clicked => match *button {
-        SettingsNavButton::Back => {
+        NavButton::Back => {
           state.pop().unwrap();
         }
-        SettingsNavButton::Apply => {
+        NavButton::Apply => {
           for (item, stype) in query_set.q0().iter() {
             config.apply_changes(item, stype);
           }
@@ -478,7 +504,7 @@ fn nav_button_clicked(
             .expect("failed to save display config to disk");
           commands.insert_resource(config.get_window_descriptor());
         }
-        SettingsNavButton::Reset => {
+        NavButton::Reset => {
           let config = GameConfig::default();
           for (item, mut stype) in query_set.q1_mut().iter_mut() {
             *stype = config.get_settings_type(item);
@@ -490,10 +516,12 @@ fn nav_button_clicked(
   }
 }
 
+/// get string settings after quitting the text input page
 enum SettingsInputTextReason {
   ChangeStringValue(Entity),
 }
 
+/// listen clicked events to string typed settings
 fn string_button_clicked(
   mut commands: Commands,
   mut state: ResMut<State<AppState>>,
@@ -513,6 +541,7 @@ fn string_button_clicked(
   }
 }
 
+/// listen click events to radio typed buttons
 fn radio_button_clicked(
   mut query: Query<
     (&Interaction, &mut SettingType),
@@ -531,6 +560,7 @@ fn radio_button_clicked(
   }
 }
 
+/// update materials of radio typed button when hovered/clicked 
 fn update_radio_material(
   mut query: Query<
     (&Interaction, &SettingType, &mut Handle<ColorMaterial>),
@@ -570,6 +600,7 @@ fn update_radio_material(
   }
 }
 
+/// listen click events to select typed buttons
 fn select_button_clicked(
   mut query: Query<
     (&Interaction, &mut SettingType),
@@ -588,6 +619,7 @@ fn select_button_clicked(
   }
 }
 
+/// update selected options of select typed button after clicked
 fn update_select_button(
   query: Query<(&SettingType, &Children), (Changed<SettingType>, With<SettingSelectButton>)>,
   mut text_query: Query<&mut Text>,
@@ -603,6 +635,7 @@ fn update_select_button(
   }
 }
 
+/// get resumed after quitting text input page
 fn resume_settings(
   mut commands: Commands,
   reason: Option<Res<SettingsInputTextReason>>,
@@ -623,6 +656,7 @@ fn resume_settings(
   }
 }
 
+/// update showing string of string typed settings after text changed
 fn update_string_settings(
   query: Query<(&SettingType, &Children), (Changed<SettingType>, With<SettingStringButton>)>,
   mut text_query: Query<&mut Text>,
@@ -638,6 +672,7 @@ fn update_string_settings(
   }
 }
 
+/// update materials of slider typed button when hovered/clicked
 fn slide_button_clicked(
   mut commands: Commands,
   query: Query<(&Interaction, Entity), (Changed<Interaction>, With<SettingSlideButton>)>,
@@ -654,6 +689,7 @@ fn slide_button_clicked(
   }
 }
 
+/// listen mouse movements and sync it with dragging slider
 fn drag_slide_button(
   mouse_position: Res<MousePosition>,
   dragging_slide: Option<Res<SettingDraggingSlide>>,
@@ -663,18 +699,13 @@ fn drag_slide_button(
     if let Ok((transform, mut stype)) = query.get_mut(slide.0) {
       let position = transform.translation;
       let value = (mouse_position.0.x - (position.x - SLIDER_LENGTH / 2.0)) / SLIDER_LENGTH;
-      let value = if value > 1.0 {
-        1.0
-      } else if value < 0.0 {
-        0.0
-      } else {
-        value
-      };
+      let value = value.max(0.0).min(1.0);
       *stype = SettingType::Slide(value);
     }
   }
 }
 
+/// update the position of the slide dragging button
 fn update_slide_button(
   query: Query<(&SettingType, &Children), With<SettingSlideButton>>,
   mut child_query: Query<&mut Style, With<SettingSlideMovingButton>>,
@@ -690,6 +721,7 @@ fn update_slide_button(
   }
 }
 
+/// destroy settings page
 fn destroy_settings(mut commands: Commands, query: Query<Entity, With<SettingsUI>>) {
   for entity in query.iter() {
     commands.entity(entity).despawn_recursive();
@@ -718,24 +750,30 @@ impl Plugin for SettingsPlugin {
       .add_system_set(SystemSet::on_enter(AppState::Settings).with_system(setup_settings))
       .add_system_set(
         SystemSet::on_update(AppState::Settings)
-          .with_system(button_material_change)
+          .with_system(nav_button_material_change)
           .with_system(nav_button_clicked)
-          .with_system(string_button_clicked.label("renew"))
-          .with_system(radio_button_clicked.label("renew"))
-          .with_system(select_button_clicked.label("renew"))
-          .with_system(slide_button_clicked.label("renew"))
-          .with_system(update_string_settings.after("renew"))
-          .with_system(update_radio_material.after("renew"))
-          .with_system(update_select_button.after("renew"))
-          .with_system(drag_slide_button.after("renew"))
-          .with_system(update_slide_button.after("renew")),
+          .with_system(string_button_clicked.label("clicked"))
+          .with_system(radio_button_clicked.label("clicked"))
+          .with_system(select_button_clicked.label("clicked"))
+          .with_system(slide_button_clicked.label("clicked"))
+          .with_system(update_string_settings.after("clicked"))
+          .with_system(update_radio_material.after("clicked"))
+          .with_system(update_select_button.after("clicked"))
+          .with_system(drag_slide_button.after("clicked"))
+          .with_system(update_slide_button.after("clicked")),
       )
-      .add_system_set(SystemSet::on_exit(AppState::Settings).with_system(destroy_settings))
-      .add_system_set(SystemSet::on_pause(AppState::Settings).with_system(hide_ui))
+      .add_system_set(
+        SystemSet::on_pause(AppState::Settings)
+          .with_system(hide_ui)
+      )
       .add_system_set(
         SystemSet::on_resume(AppState::Settings)
           .with_system(resume_ui)
           .with_system(resume_settings),
+      )
+      .add_system_set(
+        SystemSet::on_exit(AppState::Settings)
+          .with_system(destroy_settings)
       );
   }
 }

@@ -1,18 +1,16 @@
 use bevy::prelude::*;
 
-use crate::game::{engine::{entity::{CollideRadius, Player, PlayerState, Position, Velocity}, health::Health, soul::SoulPower}, sprite::sprite::{SpriteAnimateTimer, SpriteRotation, SpriteSize}};
+use crate::game::{engine::{entity::{CollideRadius, Monster, Position, Velocity}, health::Health}, sprite::sprite::{SpriteAnimateTimer, SpriteRotation, SpriteSize}};
 
 #[derive(Bundle)]
-pub struct PlayerBundle {
+pub struct MonsterBundle {
   pub velocity: Velocity,
   pub position: Position,
   pub health: Health,
-  pub soulpower: SoulPower,
   pub collision_radius: CollideRadius,
 
   /// flags
-  pub player: Player,
-  pub player_state: PlayerState,
+  pub monster: Monster,
 
   /// sprites
   #[bundle]
@@ -22,17 +20,15 @@ pub struct PlayerBundle {
   pub scale: SpriteSize,
 }
 
-impl Default for PlayerBundle {
+impl Default for MonsterBundle {
   fn default() -> Self {
-    PlayerBundle {
+    MonsterBundle {
       velocity: Velocity(Vec2::ZERO),
       position: Position(Vec2::ZERO),
-      health: Health { now: 200, max: 200 },
-      soulpower: SoulPower(20000, 20000),
+      health: Health { now: 500, max: 500 },
       collision_radius: CollideRadius(50.0),
 
-      player: Player,
-      player_state: PlayerState::default(),
+      monster: Monster,
 
       sprite: SpriteSheetBundle::default(),
       timer: SpriteAnimateTimer::default(),

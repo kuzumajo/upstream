@@ -2,7 +2,7 @@ use std::{collections::BTreeSet, iter::FromIterator};
 
 use bevy::prelude::*;
 
-use crate::{consts::AppState, game::{entity::attack::{AttackBundle, AttackSpriteType}, sprite::sprite::{SpriteRotation, SpriteScale}}};
+use crate::{consts::AppState, game::{entity::attack::{AttackBundle, AttackSpriteType}, sprite::sprite::{SpriteRotation, SpriteSize}}};
 
 use super::{entity::{CollideRadius, Position}, health::{Health, LockHealth}};
 
@@ -25,7 +25,7 @@ pub struct SingleAttack {
 pub enum AttackArea {
   /// Circle
   /// 
-  /// ```
+  /// ```text
   ///   .-```-.
   /// .`       `.
   /// |    o--r-|
@@ -41,7 +41,7 @@ pub enum AttackArea {
 
   /// Half circle
   /// 
-  /// ```
+  /// ```text
   ///  _
   /// | ``.
   /// |    `.
@@ -60,7 +60,7 @@ pub enum AttackArea {
 
   /// Rectangle
   /// 
-  /// ```
+  /// ```text
   /// .--------w--------.
   /// |                 |
   /// o     v --->      h   
@@ -111,7 +111,7 @@ fn flat_group_damage(
           position: Position(o),
           // TODO: use atan2 is not very well...
           rotation: SpriteRotation(Quat::from_rotation_z(v.y.atan2(v.x))),
-          scale: SpriteScale(Vec3::new(r / 25.0, r / 25.0, 1.0)),
+          scale: SpriteSize(Vec2::new(2.0 * r, 2.0 * r)),
           area: AttackSpriteType::HalfCircle,
           ..Default::default()
         });
@@ -119,7 +119,7 @@ fn flat_group_damage(
       &AttackArea::Circle { o, r } => {
         commands.spawn_bundle(AttackBundle {
           position: Position(o),
-          scale: SpriteScale(Vec3::new(r / 25.0, r / 25.0, 1.0)),
+          scale: SpriteSize(Vec2::new(2.0 * r, 2.0 * r)),
           area: AttackSpriteType::Circle,
           ..Default::default()
         });
@@ -129,7 +129,7 @@ fn flat_group_damage(
           position: Position(o + v * w / 2.0),
           // TODO: use atan2 is not very well...
           rotation: SpriteRotation(Quat::from_rotation_z(v.y.atan2(v.x))),
-          scale: SpriteScale(Vec3::new(w / 100.0, h / 25.0, 1.0)),
+          scale: SpriteSize(Vec2::new(w, h)),
           area: AttackSpriteType::Rectangle,
           ..Default::default()
         });

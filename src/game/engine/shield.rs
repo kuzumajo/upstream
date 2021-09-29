@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{consts::{AppState, PLAYER_SHIELD_BULLET_SPEED}, game::{MouseDirection, entity::projectile::ProjectileBundle, sprite::sprite::SpriteScale, stages::AttackPriority}};
+use crate::{consts::{AppState, PLAYER_SHIELD_BULLET_SPEED}, game::{MouseDirection, entity::projectile::ProjectileBundle, sprite::sprite::SpriteSize, stages::AttackPriority}};
 
 use super::{attack::{AttackArea, AttackDamage, GroupAttack}, cooldown::{AttackCoolDown, RemovalCoolDown, update_removal_cool_down}, entity::{CollideRadius, Controlling, PlayerState, Position, Velocity}, projectile::BulletProps, soul::SoulPower};
 
@@ -280,7 +280,7 @@ fn perform_shield_attack_b(
           })
         },
         radius: CollideRadius(30.0),
-        scale: SpriteScale(Vec3::new(60.0 / 30.0, 60.0 / 30.0, 1.0)),
+        scale: SpriteSize(Vec2::new(60.0, 60.0)),
         ..Default::default()
       });
 
@@ -311,7 +311,7 @@ fn perform_shield_attack_bb(
           })
         },
         radius: CollideRadius(30.0),
-        scale: SpriteScale(Vec3::new(60.0 / 30.0, 60.0 / 30.0, 1.0)),
+        scale: SpriteSize(Vec2::new(60.0, 60.0)),
         ..Default::default()
       });
 
@@ -342,7 +342,7 @@ fn perform_shield_attack_bbb(
           }),
         },
         radius: CollideRadius(30.0),
-        scale: SpriteScale(Vec3::new(60.0 / 30.0, 60.0 / 30.0, 1.0)),
+        scale: SpriteSize(Vec2::new(60.0, 60.0)),
         ..Default::default()
       });
 
