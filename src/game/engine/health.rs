@@ -36,7 +36,7 @@ fn remove_zero_health_entity(
 ) {
   for (entity, health) in query.iter() {
     if health.now == 0 {
-      commands.entity(entity).despawn();
+      commands.entity(entity).despawn_recursive();
     }
   }
 }
