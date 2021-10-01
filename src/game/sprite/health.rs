@@ -27,6 +27,8 @@ impl FromWorld for HealthBarMaterials {
   }
 }
 
+struct HealthBarEntity;
+
 enum HealthBarType {
   MaxHealth,
   CurrentHealth,
@@ -40,6 +42,7 @@ fn insert_health_bar(
 ) {
   for (entity, radius) in query.iter() {
     let mut entity = commands.entity(entity);
+    entity.insert(HealthBarEntity);
     entity.with_children(|parent| {
       // max health
       parent
@@ -94,28 +97,25 @@ fn insert_health_bar(
 }
 
 fn update_health_bar(
-  query: Query<(Entity, &Health), Changed<Health>>,
-  query_child: Query<&Children>,
+  query: Query<(&Children, &Health), With<HealthBarEntity>>,
   mut query_type: Query<(&HealthBarType, &mut Sprite, &mut Transform)>,
 ) {
-  for (entity, health) in query.iter() {
-    if let Ok(children) = query_child.get(entity) {
-      for entity in children.iter() {
-        if let Ok((tp, mut sprite, mut transform)) = query_type.get_mut(*entity) {
-          let now = health.now as f32 / health.max as f32 * 100.0;
-          match tp {
-            &HealthBarType::MaxHealth => {
-              // max is max...
-            }
-            &HealthBarType::CurrentHealth => {
-              sprite.size.x = now;
-            }
-            &HealthBarType::DecendingHealth => {
-              sprite.size.x = now + (sprite.size.x - now) * 0.1;
-            }
-          };
-          transform.translation.x = - (100.0 - sprite.size.x) / 2.0;
-        }
+  for (children, health) in query.iter() {
+    for entity in children.iter() {
+      if let Ok((tp, mut sprite, mut transform)) = query_type.get_mut(*entity) {
+        let now = health.now as f32 / health.max as f32 * 100.0;
+        match tp {
+          &HealthBarType::MaxHealth => {
+            // max is max...
+          }
+          &HealthBarType::CurrentHealth => {
+            sprite.size.x = now;
+          }
+          &HealthBarType::DecendingHealth => {
+            sprite.size.x = now + (sprite.size.x - now) * 0.98;
+          }
+        };
+        transform.translation.x = - (100.0 - sprite.size.x) / 2.0;
       }
     }
   }

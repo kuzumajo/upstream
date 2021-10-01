@@ -53,7 +53,10 @@ impl FromWorld for FontAssets {
 
 pub struct MousePosition(pub Vec2);
 
-fn update_mouse_position(mut events: EventReader<CursorMoved>, mut res: ResMut<MousePosition>) {
+fn update_mouse_position(
+  mut events: EventReader<CursorMoved>,
+  mut res: ResMut<MousePosition>,
+) {
   for event in events.iter() {
     res.0 = event.position;
   }
@@ -64,7 +67,10 @@ pub struct WindowSize {
   pub height: f32,
 }
 
-fn update_window_size(mut events: EventReader<WindowResized>, mut res: ResMut<WindowSize>) {
+fn update_window_size(
+  mut res: ResMut<WindowSize>,
+  mut events: EventReader<WindowResized>,
+) {
   for event in events.iter() {
     res.width = event.width;
     res.height = event.height;
@@ -98,7 +104,7 @@ fn main() {
     .insert_resource(game_config)
     .add_system_to_stage(CoreStage::PreUpdate, update_mouse_position)
     .add_system_to_stage(CoreStage::PreUpdate, update_window_size)
-    .add_system(issue_1135_system)
+    .add_system_to_stage(CoreStage::PostUpdate, issue_1135_system)
     .add_plugins(DefaultPlugins)
     .init_resource::<FontAssets>()
     .add_plugin(StudioLogoPlugin)

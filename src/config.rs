@@ -135,6 +135,7 @@ impl GameConfig {
       } else {
         WindowMode::Windowed
       },
+      scale_factor_override: Some(1.0),
       ..Default::default()
     }
   }
