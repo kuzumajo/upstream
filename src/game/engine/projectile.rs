@@ -28,7 +28,7 @@ fn bullet_collision(
       // check if bullet collides with some other entities
       if position1.0.distance(position2.0) < radius1.0 + radius2.0 {
 
-        commands.entity(entity1).despawn();
+        commands.entity(entity1).despawn_recursive();
 
         if let Some(damage) = props.damage {
           attack.push(GroupAttack {

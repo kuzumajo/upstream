@@ -90,9 +90,9 @@ impl FromWorld for PlayerSprites {
 
 fn change_player_sprite(
   sprites: Res<PlayerSprites>,
-  mut query: Query<(&mut Handle<TextureAtlas>, &mut TextureAtlasSprite, &Velocity, &PlayerState), (With<Player>, Or<(Changed<Velocity>, Changed<PlayerState>)>)>
+  mut query: Query<(&mut Handle<TextureAtlas>, &Velocity, &PlayerState), (With<Player>, Or<(Changed<Velocity>, Changed<PlayerState>)>)>
 ) {
-  for (mut handle, mut sprite, velocity, state) in query.iter_mut() {
+  for (mut handle, velocity, state) in query.iter_mut() {
     // TODO: here is alot of more animations needed
     let new_texture = match state {
       &PlayerState::Stand => if velocity.0 == Vec2::ZERO {
