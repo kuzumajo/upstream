@@ -197,6 +197,43 @@ fn recieve_damage(
   attacks.clear();
 }
 
+macro_rules! create_cool_down_system {
+  ($func_name:ident, $t:ty) => {
+    fn $func_name(
+      time: Res<Time>,
+      mut commands: Commands,
+      mut query: Query<(Entity, &mut $t)>,
+    ) {
+      query.iter_mut().for_each(|(entity, mut cd)| {
+        if cd.0.tick(time.delta()).finished() {
+          commands.entity(entity).remove::<$t>();
+        }
+      });
+    }
+  };
+}
+
+pub struct AttackCoolDown(pub Timer);
+pub struct AssaultCoolDown(pub Timer);
+
+create_cool_down_system!(update_attack_cool_down, AttackCoolDown);
+create_cool_down_system!(update_assault_cool_down, AssaultCoolDown);
+
+/// Remove entity itself
+pub struct RemovalCoolDown(pub Timer);
+
+fn update_removal_cool_down(
+  mut commands: Commands,
+  time: Res<Time>,
+  mut query: Query<(Entity, &mut RemovalCoolDown)>
+) {
+  query.iter_mut().for_each(|(entity, mut cd)| {
+    if cd.0.tick(time.delta()).finished() {
+      commands.entity(entity).despawn_recursive();
+    }
+  });
+}
+
 pub struct AttackPlugin;
 
 impl Plugin for AttackPlugin {
@@ -208,6 +245,9 @@ impl Plugin for AttackPlugin {
         SystemSet::on_update(AppState::InGame)
           .with_system(flat_group_damage)
           .with_system(recieve_damage)
+          .with_system(update_attack_cool_down)
+          .with_system(update_assault_cool_down)
+          .with_system(update_removal_cool_down)
       );
   }
 }

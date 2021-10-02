@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::game::{engine::{cooldown::RemovalCoolDown, entity::Position}, sprite::sprite::{SpriteAnimateTimer, SpriteRotation, SpriteSize}};
+use crate::game::{engine::{attack::RemovalCoolDown, entity::Position}, sprite::sprite::{SpriteAnimateTimer, SpriteRotation, SpriteSize}};
 
 pub enum AttackSpriteType {
   Circle,
@@ -19,7 +19,7 @@ pub struct AttackBundle {
   pub position: Position,
 
   // flags
-  pub removal: RemovalCoolDown<Entity>,
+  pub removal: RemovalCoolDown,
   pub area: AttackSpriteType,
 
   // sprites
@@ -35,7 +35,7 @@ impl Default for AttackBundle {
     Self {
       position: Position(Vec2::ZERO),
 
-      removal: RemovalCoolDown::new(0.3),
+      removal: RemovalCoolDown(Timer::from_seconds(0.3, false)),
       area: AttackSpriteType::default(),
 
       sprite: SpriteSheetBundle::default(),

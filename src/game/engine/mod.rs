@@ -2,8 +2,8 @@ use bevy::prelude::*;
 
 pub mod health;
 pub mod counter_attack;
-pub mod cooldown;
 pub mod entity;
+#[macro_use]
 pub mod attack;
 pub mod shield;
 pub mod soul;
@@ -19,7 +19,6 @@ impl PluginGroup for GameSystemPlugins {
       .add(shield::ShieldPlugin)
       .add(projectile::ProjectilePlugin)
       .add(attack::AttackPlugin)
-      .add(cooldown::CoolDownPlugin)
       .add(counter_attack::CounterAttackPlugin)
       .add(health::HealthPlugin);
   }

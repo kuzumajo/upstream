@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{consts::AppState, game::{engine::entity::Controlling, stages::AttackPriority}};
 
-use super::{attack::{AttackArea, AttackDamage, GroupAttack}, cooldown::AttackCoolDown, entity::Position};
+use super::{attack::{AttackArea, AttackDamage, GroupAttack, AttackCoolDown}, entity::Position};
 
 /// Entity which is at counter attack state
 pub struct CounterAttack;

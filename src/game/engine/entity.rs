@@ -20,7 +20,7 @@ pub struct Velocity(pub Vec2);
 
 pub struct CollideRadius(pub f32);
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum PlayerState {
   ShieldAttackA,
   ShieldAttackAA,
