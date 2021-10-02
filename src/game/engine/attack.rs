@@ -146,10 +146,20 @@ fn flat_group_damage(
       let collides = match attack.area {
         AttackArea::Circle { o, r } => o.distance(position.0) <= r + radius.0,
         AttackArea::HalfCircle { o, r, v } =>
-          o.distance(position.0) <= r + radius.0 && v.dot(position.0 + v * r - o) > 0.0,
+          o.distance(position.0) <= r + radius.0 && v.dot(position.0 + v * radius.0 - o) > 0.0,
         AttackArea::Rectangle { o, w, h, v } => {
-          // FIXME: I don't know how to calculate...
-          false
+          let o = o + v * w / 2.0;
+          let c = {
+            // fuck bevy engine
+            let c = position.0 - o;
+            let d = Vec2::new(v.x, -v.y);
+            Vec2::new(c.x * d.x - c.y * d.y, c.x * d.y + c.y * d.x)
+          };
+          let c = c.abs();
+
+          (c.x <= w / 2.0 && c.y <= h / 2.0 + radius.0) ||
+          (c.y <= h / 2.0 && c.x <= w / 2.0 + radius.0) ||
+          Vec2::new(c.x - w / 2.0, c.y - h / 2.0).length() <= radius.0
         }
       };
 
