@@ -41,6 +41,9 @@ pub const PLAYER_SHIELD_BULLET_SPEED: f32 = 1800.0;
 
 pub const CAMERA_SYNC_SPEED: f32 = 6.0;
 
+// Shield
+pub const SHIELD_ASSAULT_SPEED: f32 = 900.0;
+
 // crypto
 
 /// Crypto key, but maybe change after release

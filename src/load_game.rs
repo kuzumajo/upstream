@@ -182,6 +182,7 @@ fn slot_material_change(
 }
 
 fn slot_button_click(
+  mut mouse_input: ResMut<Input<MouseButton>>,
   mut commands: Commands,
   mut interaction_query: Query<(&Interaction, &GameSaveSlot), (Changed<Interaction>, With<Button>)>,
   mut state: ResMut<State<AppState>>,
@@ -192,6 +193,7 @@ fn slot_button_click(
         commands.insert_resource(AutoSaveSlot(save_slot.1));
         if let Some(save) = &save_slot.0 {
           // start the game directly
+          mouse_input.clear_just_pressed(MouseButton::Left);
           commands.insert_resource(save.clone());
           state.replace(AppState::InGame).unwrap();
         } else {

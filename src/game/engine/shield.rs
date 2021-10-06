@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{consts::{AppState, PLAYER_SHIELD_BULLET_SPEED}, game::{MouseDirection, entity::projectile::ProjectileBundle, sprite::sprite::SpriteSize, stages::AttackPriority}};
+use crate::{consts::{AppState, PLAYER_SHIELD_BULLET_SPEED, SHIELD_ASSAULT_SPEED}, game::{MouseDirection, entity::projectile::ProjectileBundle, sprite::sprite::SpriteSize, stages::{AttackPriority, PhysicsLabel}}};
 
-use super::{attack::{AttackArea, AttackCoolDown, AttackDamage, GroupAttack}, entity::{CollideRadius, Controlling, PlayerState, Position, Velocity}, projectile::BulletProps, soul::SoulPower};
+use super::{attack::{AttackArea, AttackDamage, GroupAttack}, entity::{CollideRadius, Controlling, PlayerState, Position, Velocity}, movement::DisableWASD, projectile::BulletProps, soul::SoulPower};
 
 /// Used to check trigger result
 enum ShieldAttackType {
@@ -20,12 +20,19 @@ struct ShieldAttackPrefix(Timer, ShieldAttackType);
 /// Used to trigger attack
 struct ShieldAttackAnimation(Timer);
 
+/// Assault time (default 0.5s)
+struct ShieldAssault(Timer);
+
+
+struct ShieldAttackCoolDown(Timer);
+struct ShieldAssaultCoolDown(Timer);
+
 /// Trigger all kinds of common attacks in shield
 fn trigger_shield_common_attack(
   mut commands: Commands,
   mut query: Query<
     (Entity, &mut PlayerState, Option<&ShieldAttackPrefix>, &mut SoulPower),
-    (With<Controlling>, Without<AttackCoolDown>)
+    (With<Controlling>, Without<ShieldAttackCoolDown>)
   >,
   mouse_input: Res<Input<MouseButton>>,
 ) {
@@ -76,7 +83,7 @@ fn trigger_shield_common_attack(
       Some(ShieldAttackType::A) => {
         *state = PlayerState::ShieldAttackA;
         commands.entity(entity)
-          .insert(AttackCoolDown(Timer::from_seconds(0.2, false)))
+          .insert(ShieldAttackCoolDown(Timer::from_seconds(0.2, false)))
           .insert(ShieldAttackAnimation(Timer::from_seconds(0.2, false)))
           .insert(ShieldAttackPrefix(Timer::from_seconds(1.5, false), ShieldAttackType::A));
       }
@@ -84,27 +91,27 @@ fn trigger_shield_common_attack(
         *state = PlayerState::ShieldAttackAA;
         commands.entity(entity)
           .remove::<ShieldAttackPrefix>()
-          .insert(AttackCoolDown(Timer::from_seconds(1.4, false)))
+          .insert(ShieldAttackCoolDown(Timer::from_seconds(1.4, false)))
           .insert(ShieldAttackAnimation(Timer::from_seconds(0.4, false)));
       }
       Some(ShieldAttackType::AB) => {
         *state = PlayerState::ShieldAttackAB;
         commands.entity(entity)
           .remove::<ShieldAttackPrefix>()
-          .insert(AttackCoolDown(Timer::from_seconds(1.1, false)))
+          .insert(ShieldAttackCoolDown(Timer::from_seconds(1.1, false)))
           .insert(ShieldAttackAnimation(Timer::from_seconds(0.1, false)));
       }
       Some(ShieldAttackType::B) => {
         *state = PlayerState::ShieldAttackB;
         commands.entity(entity)
-          .insert(AttackCoolDown(Timer::from_seconds(0.2, false)))
+          .insert(ShieldAttackCoolDown(Timer::from_seconds(0.2, false)))
           .insert(ShieldAttackAnimation(Timer::from_seconds(0.2, false)))
           .insert(ShieldAttackPrefix(Timer::from_seconds(1.0, false), ShieldAttackType::B));
       }
       Some(ShieldAttackType::BB) => {
         *state = PlayerState::ShieldAttackBB;
         commands.entity(entity)
-          .insert(AttackCoolDown(Timer::from_seconds(0.2, false)))
+          .insert(ShieldAttackCoolDown(Timer::from_seconds(0.2, false)))
           .insert(ShieldAttackAnimation(Timer::from_seconds(0.2, false)))
           .insert(ShieldAttackPrefix(Timer::from_seconds(1.0, false), ShieldAttackType::BB));
       }
@@ -112,7 +119,7 @@ fn trigger_shield_common_attack(
         *state = PlayerState::ShieldAttackBBB;
         commands.entity(entity)
           .remove::<ShieldAttackPrefix>()
-          .insert(AttackCoolDown(Timer::from_seconds(1.4, false)))
+          .insert(ShieldAttackCoolDown(Timer::from_seconds(1.4, false)))
           .insert(ShieldAttackAnimation(Timer::from_seconds(0.4, false)));
       }
     }
@@ -124,7 +131,7 @@ fn perform_shield_common_attack(
   time: Res<Time>,
   direction: Res<MouseDirection>,
   mut attack: ResMut<Vec<GroupAttack>>,
-  mut query: Query<(Entity, &Position, &mut ShieldAttackAnimation, &mut PlayerState)>,
+  mut query: Query<(Entity, &Position, &mut ShieldAttackAnimation, &mut PlayerState), With<Controlling>>,
 ) {
   if let Ok((entity, position, mut animation, mut state)) = query.single_mut() {
     if animation.0.tick(time.delta()).finished() {
@@ -225,15 +232,121 @@ fn perform_shield_common_attack(
             ..Default::default()
           });
         }
-        _ => { warn!("unexpected PlayerState detected"); println!("{:?}", *state); }
+        _ => { warn!("unexpected PlayerState detected") }
       }
       *state = PlayerState::Stand;
     }
   }
 }
 
-create_cool_down_system!(update_shield_attack_prefix, ShieldAttackPrefix);
+fn trigger_shield_assault(
+  mut commands: Commands,
+  keycode_input: Res<Input<KeyCode>>,
+  mouse_direction: Res<MouseDirection>,
+  mut query: Query<(Entity, &mut Velocity, &mut PlayerState), (With<Controlling>, Without<ShieldAssaultCoolDown>)>
+) {
+  for (entity, mut velocity, mut state) in query.single_mut() {
+    if keycode_input.just_pressed(KeyCode::Space) {
+      let is_stand = *state == PlayerState::Stand;
+      let is_attack = {
+        *state == PlayerState::ShieldAttackA   ||
+        *state == PlayerState::ShieldAttackAA  ||
+        *state == PlayerState::ShieldAttackAB  ||
+        *state == PlayerState::ShieldAttackB   ||
+        *state == PlayerState::ShieldAttackBB  ||
+        *state == PlayerState::ShieldAttackBBB
+      };
 
+      if is_attack {
+        commands.entity(entity)
+          .remove::<ShieldAttackAnimation>();
+      }
+
+      if is_stand || is_attack {
+        *state = PlayerState::ShieldAssault;
+        velocity.0 = mouse_direction.0 * SHIELD_ASSAULT_SPEED;
+        commands.entity(entity)
+          .insert(ShieldAssaultCoolDown(Timer::from_seconds(1.5, false)))
+          .insert(ShieldAssault(Timer::from_seconds(0.5, false)))
+          .insert(DisableWASD);
+      }
+    }
+  }
+}
+
+fn trigger_shield_assault_attack(
+  mouse_input: Res<Input<MouseButton>>,
+  mut query: Query<&mut PlayerState, With<Controlling>>,
+) {
+  for mut state in query.single_mut() {
+    if *state == PlayerState::ShieldAssault {
+      if mouse_input.just_pressed(MouseButton::Left) {
+        *state = PlayerState::ShieldAssaultA;
+      } else if mouse_input.just_pressed(MouseButton::Right) {
+        *state = PlayerState::ShieldAssaultB;
+      }
+    }
+  }
+}
+
+fn perform_shield_assault_attack(
+  mut commands: Commands,
+  time: Res<Time>,
+  mouse_direction: Res<MouseDirection>,
+  mut group_attacks: ResMut<Vec<GroupAttack>>,
+  mut query: Query<(Entity, &Position, &mut PlayerState, &mut ShieldAssault), With<Controlling>>,
+) {
+  for (entity, position, mut state, mut assault) in query.single_mut() {
+    if assault.0.tick(time.delta()).finished() {
+      *state = PlayerState::Stand;
+      commands.entity(entity)
+        .remove::<DisableWASD>()
+        .remove::<ShieldAssault>();
+      return;
+    }
+
+    // FIXME: every enermy only recieve one attack
+    if *state == PlayerState::ShieldAssaultA {
+      group_attacks.push(GroupAttack {
+        area: AttackArea::HalfCircle {
+          o: position.0,
+          r: 150.0,
+          v: mouse_direction.0,
+        },
+        entities: Vec::new(),
+        damage: AttackDamage::Physical {
+          damage: 30,
+          power: 2,
+        },
+        from: Some(entity),
+      });
+    }
+
+    // FIXME: every enermy only recieve one attack
+    if *state == PlayerState::ShieldAssaultB {
+      group_attacks.push(GroupAttack {
+        area: AttackArea::Rectangle {
+          o: position.0,
+          w: 500.0,
+          h: 150.0,
+          v: mouse_direction.0,
+        },
+        entities: Vec::new(),
+        damage: AttackDamage::Physical {
+          damage: 40,
+          power: 2,
+        },
+        from: Some(entity),
+      });
+    }
+  }
+}
+
+create_cool_down_system!(update_shield_attack_prefix, ShieldAttackPrefix);
+create_cool_down_system!(update_shield_attack_cool_down, ShieldAttackCoolDown);
+create_cool_down_system!(update_shield_assault_cool_down, ShieldAssaultCoolDown);
+
+/// All controls under shield attack pattern
 pub struct ShieldPlugin;
 
 impl Plugin for ShieldPlugin {
@@ -244,6 +357,11 @@ impl Plugin for ShieldPlugin {
           .with_system(trigger_shield_common_attack.label(AttackPriority::Normal))
           .with_system(perform_shield_common_attack)
           .with_system(update_shield_attack_prefix)
+          .with_system(update_shield_attack_cool_down)
+          .with_system(update_shield_assault_cool_down)
+          .with_system(trigger_shield_assault.after(PhysicsLabel::UpdateVelocity))
+          .with_system(trigger_shield_assault_attack)
+          .with_system(perform_shield_assault_attack)
       );
   }
 }

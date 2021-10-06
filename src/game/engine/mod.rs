@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 
+#[macro_use]
+pub mod attack;
 pub mod health;
 pub mod counter_attack;
 pub mod entity;
-#[macro_use]
-pub mod attack;
 pub mod shield;
 pub mod soul;
 pub mod movement;

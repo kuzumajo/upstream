@@ -101,9 +101,6 @@ fn flat_group_damage(
   for attack in group_attacks.iter() {
     let mut set: BTreeSet<Entity> = BTreeSet::from_iter(attack.entities.clone().into_iter());
 
-    // XXX: debug here
-    println!("{:?}", attack);
-
     // insert effects
     match &attack.area {
       &AttackArea::HalfCircle { o, r, v } => {
@@ -223,12 +220,6 @@ macro_rules! create_cool_down_system {
   };
 }
 
-pub struct AttackCoolDown(pub Timer);
-pub struct AssaultCoolDown(pub Timer);
-
-create_cool_down_system!(update_attack_cool_down, AttackCoolDown);
-create_cool_down_system!(update_assault_cool_down, AssaultCoolDown);
-
 /// Remove entity itself
 pub struct RemovalCoolDown(pub Timer);
 
@@ -255,8 +246,6 @@ impl Plugin for AttackPlugin {
         SystemSet::on_update(AppState::InGame)
           .with_system(flat_group_damage)
           .with_system(recieve_damage)
-          .with_system(update_attack_cool_down)
-          .with_system(update_assault_cool_down)
           .with_system(update_removal_cool_down)
       );
   }

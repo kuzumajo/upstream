@@ -29,10 +29,10 @@ pub enum PlayerState {
   ShieldAttackBB,
   ShieldAttackBBB,
 
+  ShieldAssault,
   ShieldAssaultA,
   ShieldAssaultB,
 
-  Assault,
   Stand,
 }
 

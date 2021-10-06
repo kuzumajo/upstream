@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{consts::AppState, game::{engine::entity::Controlling, stages::AttackPriority}};
 
-use super::{attack::{AttackArea, AttackDamage, GroupAttack, AttackCoolDown}, entity::Position};
+use super::{attack::{AttackArea, AttackDamage, GroupAttack}, entity::Position, soul::SoulPower};
 
 /// Entity which is at counter attack state
 pub struct CounterAttack;
@@ -16,13 +16,14 @@ fn trigger_counter_attack(
   mut commands: Commands,
   mut attacks: ResMut<Vec<GroupAttack>>,
   mut mouse_input: ResMut<Input<MouseButton>>,
-  query: Query<(Entity, &Position), (With<Controlling>, Without<AttackCoolDown>, With<CounterAttack>)>,
+  mut query: Query<(Entity, &Position, &mut SoulPower), (With<Controlling>, With<CounterAttack>)>,
   obj_query: Query<Entity, With<CounterAttackTarget>>,
 ) {
   if mouse_input.just_pressed(MouseButton::Left) {
-    if let Ok((entity, position)) = query.single() {
+    if let Ok((entity, position, mut soul)) = query.single_mut() {
       mouse_input.clear_just_pressed(MouseButton::Left);
 
+      soul.obtain(50);
       commands.entity(entity)
         .remove::<CounterAttack>();
 

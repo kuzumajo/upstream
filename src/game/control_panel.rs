@@ -3,6 +3,10 @@ use crate::saves::GameSave;
 use crate::FontAssets;
 use bevy::prelude::*;
 
+use super::engine::entity::Player;
+use super::engine::health::Health;
+use super::engine::soul::SoulPower;
+
 struct ControlPanelUI;
 
 /// white bar to indicate how much damage recieved
@@ -208,6 +212,18 @@ fn destroy_control_panel(mut commands: Commands, query: Query<Entity, With<Contr
   commands.remove_resource::<HealthLosing>();
 }
 
+fn sync_player_status(
+  mut save: ResMut<GameSave>,
+  query: Query<(&Health, &SoulPower), (With<Player>, Or<(Changed<Health>, Changed<SoulPower>)>)>,
+) {
+  if let Ok((health, soul)) = query.single() {
+    save.health = health.now;
+    save.health_limit = health.max;
+    save.energy = soul.now;
+    save.energy_limit = soul.max;
+  }
+}
+
 /// Manage the whole player control panel
 pub struct ControlPanelPlugin;
 
@@ -216,16 +232,19 @@ impl Plugin for ControlPanelPlugin {
     app
       .init_resource::<ControlPanelMaterials>()
       .add_system_set(
-        SystemSet::on_enter(AppState::InGame).with_system(setup_control_panel),
+        SystemSet::on_enter(AppState::InGame)
+          .with_system(setup_control_panel)
       )
       .add_system_set(
         SystemSet::on_update(AppState::InGame)
           .with_system(update_health_bar)
           .with_system(update_energy_bar)
-          .with_system(update_health_losing_bar),
+          .with_system(update_health_losing_bar)
+          .with_system(sync_player_status)
       )
       .add_system_set(
-        SystemSet::on_exit(AppState::InGame).with_system(destroy_control_panel),
+        SystemSet::on_exit(AppState::InGame)
+          .with_system(destroy_control_panel)
       );
   }
 }

@@ -1,20 +1,23 @@
 
 /// soul power of an entity
 /// (now, max)
-pub struct SoulPower(pub u32, pub u32);
+pub struct SoulPower {
+  pub now: u32,
+  pub max: u32,
+}
 
 impl SoulPower {
   pub fn cost(&mut self, cost: u32) -> bool {
-    if self.0 >= cost {
-      self.0 -= cost;
+    if self.now >= cost {
+      self.now -= cost;
       true
     } else {
       false
     }
   }
 
-  pub fn gain(&mut self, gain: u32) {
-    self.0 = self.1.min(self.0 + gain);
+  pub fn obtain(&mut self, soul: u32) {
+    self.now = self.max.min(self.now + soul);
   }
 }
 

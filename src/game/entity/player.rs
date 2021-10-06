@@ -28,7 +28,7 @@ impl Default for PlayerBundle {
       velocity: Velocity(Vec2::ZERO),
       position: Position(Vec2::ZERO),
       health: Health { now: 200, max: 200 },
-      soulpower: SoulPower(20000, 20000),
+      soulpower: SoulPower { now: 2000, max: 2000 },
       collision_radius: CollideRadius(50.0),
 
       player: Player,

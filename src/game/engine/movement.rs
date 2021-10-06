@@ -4,10 +4,13 @@ use crate::{consts::{AppState, PLAYER_MOVE_SPEED}, game::stages::PhysicsLabel};
 
 use super::entity::{Controlling, Position, Velocity};
 
+/// disable WASD moving
+pub struct DisableWASD;
+
 /// update entity's velocity which has Controlling tag
 fn update_controlling_velocity(
   keycode_input: Res<Input<KeyCode>>,
-  mut query: Query<&mut Velocity, With<Controlling>>
+  mut query: Query<&mut Velocity, (With<Controlling>, Without<DisableWASD>)>
 ) {
   for mut velocity in query.iter_mut() {
     let mut direction = Vec2::ZERO;
