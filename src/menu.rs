@@ -1,5 +1,6 @@
 use crate::consts::*;
 use crate::FontAssets;
+use crate::sounds::SoundEffects;
 use bevy::app::AppExit;
 use bevy::prelude::*;
 
@@ -144,6 +145,18 @@ fn button_click(
   }
 }
 
+fn button_hover_sfx(
+  sounds: Res<SoundEffects>,
+  audio: Res<Audio>,
+  query: Query<&Interaction, (Changed<Interaction>, With<MenuButton>)>,
+) {
+  for interaction in query.iter() {
+    if interaction == &Interaction::Hovered {
+      audio.play(sounds.tape.clone());
+    }
+  }
+}
+
 fn hide_ui(mut query: Query<&mut Style, With<GameMenuUI>>) {
   for mut style in query.iter_mut() {
     style.display = Display::None;
@@ -172,7 +185,8 @@ impl Plugin for GameMenuPlugin {
       .add_system_set(
         SystemSet::on_update(AppState::Menu)
           .with_system(button_material_change)
-          .with_system(button_click),
+          .with_system(button_click)
+          .with_system(button_hover_sfx)
       )
       .add_system_set(SystemSet::on_exit(AppState::Menu).with_system(destroy_menu))
       .add_system_set(SystemSet::on_pause(AppState::Menu).with_system(hide_ui))

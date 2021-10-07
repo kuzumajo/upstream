@@ -18,6 +18,7 @@ mod saves;
 mod settings;
 mod staff;
 mod text_input;
+mod sounds;
 
 use crate::config::GameConfig;
 use crate::consts::*;
@@ -31,6 +32,7 @@ use crate::menu::GameMenuPlugin;
 use crate::settings::SettingsPlugin;
 use crate::staff::StaffPlugin;
 use crate::text_input::TextInputPlugin;
+use crate::sounds::SoundEffectsPlugin;
 
 fn insert_camera(mut commands: Commands) {
   commands.spawn_bundle(OrthographicCameraBundle::new_2d()).insert(GameCamera);
@@ -113,6 +115,7 @@ fn main() {
     .add_plugin(LoadGamePlugin)
     .add_plugin(TextInputPlugin)
     .add_plugin(SettingsPlugin)
+    .add_plugin(SoundEffectsPlugin)
     .add_plugins(GameBasicPlugins)
     .add_plugins(GameSystemPlugins)
     .add_plugins(SpriteSystemPlugins)
