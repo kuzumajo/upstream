@@ -130,7 +130,7 @@ fn perform_shield_common_attack(
   mut commands: Commands,
   time: Res<Time>,
   direction: Res<MouseDirection>,
-  mut attack: ResMut<Vec<GroupAttack>>,
+  mut attack: EventWriter<GroupAttack>,
   mut query: Query<(Entity, &Position, &mut ShieldAttackAnimation, &mut PlayerState), With<Controlling>>,
 ) {
   if let Ok((entity, position, mut animation, mut state)) = query.single_mut() {
@@ -139,7 +139,7 @@ fn perform_shield_common_attack(
 
       match *state {
         PlayerState::ShieldAttackA => {
-          attack.push(GroupAttack {
+          attack.send(GroupAttack {
             area: AttackArea::HalfCircle {
               o: position.0,
               r: 150.0,
@@ -154,7 +154,7 @@ fn perform_shield_common_attack(
           });
         }
         PlayerState::ShieldAttackAA => {
-          attack.push(GroupAttack {
+          attack.send(GroupAttack {
             area: AttackArea::HalfCircle {
               o: position.0,
               r: 150.0,
@@ -169,7 +169,7 @@ fn perform_shield_common_attack(
           });
         }
         PlayerState::ShieldAttackAB => {
-          attack.push(GroupAttack {
+          attack.send(GroupAttack {
             area: AttackArea::Rectangle {
               o: position.0,
               w: 250.0,
@@ -293,7 +293,7 @@ fn perform_shield_assault_attack(
   mut commands: Commands,
   time: Res<Time>,
   mouse_direction: Res<MouseDirection>,
-  mut group_attacks: ResMut<Vec<GroupAttack>>,
+  mut group_attacks: EventWriter<GroupAttack>,
   mut query: Query<(Entity, &Position, &mut PlayerState, &mut ShieldAssault), With<Controlling>>,
 ) {
   for (entity, position, mut state, mut assault) in query.single_mut() {
@@ -307,7 +307,7 @@ fn perform_shield_assault_attack(
 
     // FIXME: every enermy only recieve one attack
     if *state == PlayerState::ShieldAssaultA {
-      group_attacks.push(GroupAttack {
+      group_attacks.send(GroupAttack {
         area: AttackArea::HalfCircle {
           o: position.0,
           r: 150.0,
@@ -324,7 +324,7 @@ fn perform_shield_assault_attack(
 
     // FIXME: every enermy only recieve one attack
     if *state == PlayerState::ShieldAssaultB {
-      group_attacks.push(GroupAttack {
+      group_attacks.send(GroupAttack {
         area: AttackArea::Rectangle {
           o: position.0,
           w: 500.0,

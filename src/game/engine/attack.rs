@@ -94,8 +94,8 @@ pub enum AttackDamage {
 /// convert group attack to single attack
 fn flat_group_damage(
   mut commands: Commands,
-  mut group_attacks: ResMut<Vec<GroupAttack>>,
-  mut single_attacks: ResMut<Vec<SingleAttack>>,
+  mut group_attacks: EventReader<GroupAttack>,
+  mut single_attacks: EventWriter<SingleAttack>,
   query: Query<(Entity, &Position, &CollideRadius)>,
 ) {
   for attack in group_attacks.iter() {
@@ -166,20 +166,18 @@ fn flat_group_damage(
     }
 
     for entity in set {
-      single_attacks.push(SingleAttack {
+      single_attacks.send(SingleAttack {
         entity,
         damage: attack.damage,
         from: attack.from,
       });
     }
   }
-
-  group_attacks.clear();
 }
 
 /// perform damage to targeted entity
 fn recieve_damage(
-  mut attacks: ResMut<Vec<SingleAttack>>,
+  mut attacks: EventReader<SingleAttack>,
   mut query: Query<(&mut Health, Option<&LockHealth>)>,
 ) {
   for attack in attacks.iter() {
@@ -200,8 +198,6 @@ fn recieve_damage(
       // TODO: play repellent here
     }
   }
-
-  attacks.clear();
 }
 
 macro_rules! create_cool_down_system {
@@ -240,8 +236,8 @@ pub struct AttackPlugin;
 impl Plugin for AttackPlugin {
   fn build(&self, app: &mut App) {
     app
-      .insert_resource::<Vec<GroupAttack>>(Vec::new())
-      .insert_resource::<Vec<SingleAttack>>(Vec::new())
+      .add_event::<GroupAttack>()
+      .add_event::<SingleAttack>()
       .add_system_set(
         SystemSet::on_update(AppState::InGame)
           .with_system(flat_group_damage)

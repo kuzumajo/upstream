@@ -15,7 +15,7 @@ pub struct BulletProps {
 /// or the whole area.
 fn bullet_collision(
   mut commands: Commands,
-  mut attack: ResMut<Vec<GroupAttack>>,
+  mut attack: EventWriter<GroupAttack>,
   query: Query<(Entity, &Position, &CollideRadius, &BulletProps)>,
   obj_query: Query<(Entity, &Position, &CollideRadius)>,
 ) {
@@ -31,7 +31,7 @@ fn bullet_collision(
         commands.entity(entity1).despawn_recursive();
 
         if let Some(damage) = props.damage {
-          attack.push(GroupAttack {
+          attack.send(GroupAttack {
             area: AttackArea::Circle {
               o: position1.0,
               r: radius1.0,

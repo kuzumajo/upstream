@@ -14,7 +14,7 @@ pub struct CounterAttackTarget;
 /// this is a high priority attack
 fn trigger_counter_attack(
   mut commands: Commands,
-  mut attacks: ResMut<Vec<GroupAttack>>,
+  mut attacks: EventWriter<GroupAttack>,
   mut mouse_input: ResMut<Input<MouseButton>>,
   mut query: Query<(Entity, &Position, &mut SoulPower), (With<Controlling>, With<CounterAttack>)>,
   obj_query: Query<Entity, With<CounterAttackTarget>>,
@@ -27,7 +27,7 @@ fn trigger_counter_attack(
       commands.entity(entity)
         .remove::<CounterAttack>();
 
-      attacks.push(GroupAttack {
+      attacks.send(GroupAttack {
         area: AttackArea::Circle {
           o: position.0,
           r: 350.0,
